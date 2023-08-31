@@ -628,6 +628,57 @@ struct PACKED log_STAK {
     char name[16];
 };
 
+struct PACKED log_position {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float x;
+    float y;
+    float z;
+    float phi;
+    float theta;
+    float psi;
+    float phi_p;
+    float theta_p;
+};
+
+struct PACKED log_velocity {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float x_dot;
+    float y_dot;
+    float z_dot;
+    float phi_dot;
+    float theta_dot;
+    float psi_dot;
+    float phi_p_dot;
+    float theta_p_dot;
+};
+
+struct PACKED log_att_trac {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float phi;
+    float theta;
+    float psi;
+    float phi_h;
+    float theta_h;
+    float psi_h;
+    float psi_h_dot;
+};
+
+struct PACKED log_sys_ID_ph {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    uint16_t PWM1;
+    uint16_t PWM2;
+    uint16_t PWM3;
+    uint16_t PWM4;
+    uint16_t Pf;
+    float phi;
+    float theta;
+    float psi;
+};
+
 struct PACKED log_File {
     LOG_PACKET_HEADER;
     char filename[16];
@@ -1305,6 +1356,14 @@ LOG_STRUCTURE_FROM_VISUALODOM \
       "PSCD", PIDx_FMT, "TimeUS,TPD,PD,DVD,TVD,VD,DAD,TAD,AD", PIDx_UNITS, PIDx_MULTS }, \
     { LOG_STAK_MSG, sizeof(log_STAK), \
       "STAK", "QBBHHN", "TimeUS,Id,Pri,Total,Free,Name", "s#----", "F-----", true }, \
+    { LOG_POSI_MSG, sizeof(log_position), \
+      "POSI", "Qffffffff", "TimeUS,x,y,z,ph,th,ps,php,thp", "smmmddddd", "F--------", true }, \
+    { LOG_VELO_MSG, sizeof(log_velocity), \
+      "VELO", "Qffffffff", "TimeUS,x_dot,y_dot,z_dot,ph_dot,th_dot,ps_dot,php_dot,thp_dot", "snnnkkkkk", "F--------", true }, \
+    { LOG_ATT_TRA_MSG, sizeof(log_att_trac), \
+      "LATT", "Qfffffff", "TimeUS,ph,th,psi,ph_h,th_h,ps_h,ps_h_dot", "sddddddk", "F-------", true }, \
+    { LOG_SID_PH_MSG, sizeof(log_sys_ID_ph), \
+      "SIDP", "QHHHHHfff", "TimeUS,P1,P2,P3,P4,Pf,ph,th,ps", "s-----ddd", "F--------", true }, \
     { LOG_FILE_MSG, sizeof(log_File), \
       "FILE",   "NIBZ",       "FileName,Offset,Length,Data", "----", "----" }, \
 LOG_STRUCTURE_FROM_AIS \
@@ -1401,7 +1460,10 @@ enum LogMessages : uint8_t {
     LOG_RCOUT2_MSG,
     LOG_RCOUT3_MSG,
     LOG_IDS_FROM_FENCE,
-
+    LOG_POSI_MSG,
+    LOG_VELO_MSG,
+    LOG_ATT_TRA_MSG,
+    LOG_SID_PH_MSG,
     _LOG_LAST_MSG_
 };
 
