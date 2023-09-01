@@ -1,6 +1,7 @@
 #include "Copter.h"
 
 #if MODE_LOITER_ENABLED == ENABLED
+// int code_starting_flag = 1;
 
 /*
  * Init and run calls for loiter flight mode

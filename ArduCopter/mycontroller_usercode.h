@@ -48,4 +48,4 @@ extern float z_des;
 
 extern Vector3f qc;
 
-extern int code_starting_flag;
+// extern int code_starting_flag;
