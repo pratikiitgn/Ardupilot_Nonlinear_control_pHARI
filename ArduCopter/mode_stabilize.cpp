@@ -110,33 +110,18 @@ float Final_throttle_TRO_single_quad    = 0.0;  // rarnge [ 0 1] - offset = 0.21
 void ModeStabilize::run()
 {
 
-        //////////////////////////////////////////////////////////
-        /// Before turning into the TRO code lets initialize and reset the states of the system
-        //////////////////////////////////////////////////////////
-        // if (code_starting_flag == 1){
-        //     yaw_initially = 0.0;
-        //     H_yaw   = 360.0-(ahrs.yaw_sensor)   / 100.0;     // degrees ;
+    if (code_starting_flag == 0){
 
-        //     float quad_x_ini_inertial =  inertial_nav.get_position_xy_cm().x / 100.0;
-        //     float quad_y_ini_inertial =  inertial_nav.get_position_xy_cm().y / 100.0;
+        // To intialize the code
+        copter.init_rc_out();
+        hal.rcout->set_freq( 15, ESC_HZ); //0xFF  0x0F->b'00001111'
+        hal.rcout->enable_ch(0);
+        hal.rcout->enable_ch(1);
+        hal.rcout->enable_ch(2);
+        hal.rcout->enable_ch(3);
+        code_starting_flag = 1;
 
-        //     quad_x_ini =  cosf(yaw_initially)*quad_x_ini_inertial + sinf(yaw_initially)*quad_y_ini_inertial;
-        //     quad_y_ini = -sinf(yaw_initially)*quad_x_ini_inertial + cosf(yaw_initially)*quad_y_ini_inertial;
-        //     quad_z_ini =  inertial_nav.get_position_z_up_cm() / 100.0;
-            
-        //     ///////////// Checking batter voltage  /////////////
-        //         battery_check();
-        //     ///////////// getting states of quadcopter /////////////
-        //         quad_states();
-        //         x_des      =  quad_x;
-        //         y_des      =  quad_y;
-        //         z_des      =  quad_z;
-        //     ///////////// getting states of quadcopter /////////////
-        //         cable_states();
-        //     ///////////// Taking pilot inputs  /////////////
-        //         pilot_input();
-        //         code_starting_flag = 0;
-        // }
+    }else{
         
     /////////////////////////////////////
     /// Let's initialize the necessary functions/variables
@@ -285,6 +270,7 @@ void ModeStabilize::run()
         /////////////////////////////////////
         /// TRO 23 controller for single quad ends here
         ////////////////////////////////////
+    }
     }
 }
 
