@@ -205,14 +205,14 @@ void ModeStabilize::run()
             /// TRO 23 controller for single quad starts here
             ////////////////////////////////////
 
-            // if (copter.motors->armed()){
+            if (copter.motors->armed()){
                 Non_linear_controller_single_quad();
-            // }else{
+            }else{
                 PWM1 = 1000;
                 PWM2 = 1000;
                 PWM3 = 1000;
                 PWM4 = 1000;
-            // }
+            }
             
             /////////////////////////////////////
             /// TRO 23 controller for single quad ends here
@@ -286,7 +286,7 @@ void ModeStabilize::Non_linear_controller_single_quad(){
         Vector3f e_xq_dot(e_x_dot,e_y_dot,e_z_dot);
         Vector3f e3_with_gravity(0.0,0.0, mass_quad * gravity);
         Vector3f u_quad_pos(Matrix_vector_mul(K_xq,e_xq) + Matrix_vector_mul(K_xq_dot,e_xq_dot) + e3_with_gravity );
-        hal.console->printf("%3.3f,%3.3f,%3.3f\n", u_quad_pos[0],u_quad_pos[1],u_quad_pos[2]);
+        hal.console->printf("  |  u_q_pos_1 -> %3.3f,u_q_pos_1 -> %3.3f, u_q_pos_1 -> %3.3f\n", u_quad_pos[0],u_quad_pos[1],u_quad_pos[2]);
         Vector3f b1c(cosf(imu_yaw*PI/180.0), sinf(imu_yaw*PI/180.0), 0);       // imu_yaw - degrees
         // hal.console->printf("%3.3f,%3.3f,%3.3f,%3.3f\n", b1c[0],b1c[1],b1c[2],imu_yaw);
         Vector3f b3d( u_quad_pos[0]/vector_norm(u_quad_pos), u_quad_pos[1]/vector_norm(u_quad_pos), u_quad_pos[2]/vector_norm(u_quad_pos));
@@ -405,10 +405,10 @@ void ModeStabilize::custom_geometric_controller_with_Rotation_matrix(Matrix3f Rd
             // hal.console->printf("%f,%f,%f\n",e_R_val[0],e_R_val[1],e_R_val[2]);
             // hal.console->printf("%f,%f,%f\n",e_R_val[0],e_R_val[1],e_R_val[2]);
 
-            PWM1 = 1000;
-            PWM2 = 1000;
-            PWM3 = 1000;
-            PWM4 = 1000;
+            // PWM1 = 1000;
+            // PWM2 = 1000;
+            // PWM3 = 1000;
+            // PWM4 = 1000;
 }
 
 
