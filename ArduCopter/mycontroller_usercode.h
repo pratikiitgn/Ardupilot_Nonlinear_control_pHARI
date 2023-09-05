@@ -49,3 +49,4 @@ extern float z_des;
 extern Vector3f qc;
 
 // extern int code_starting_flag;
+extern AP_Float my_new_parameter;                  // my new parameter's description goes here

@@ -44,6 +44,10 @@
     # define ARMING_DELAY_SEC 2.0f
 #endif
 
+#ifndef MY_NEW_PARAMETER_DEFAULT
+ # define MY_NEW_PARAMETER_DEFAULT      100.0     // default value for my new parameter
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 // FRAME_CONFIG
 //

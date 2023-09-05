@@ -17,6 +17,9 @@
  #include <AC_AttitudeControl/AC_WeatherVane.h>
 #endif
 
+// extern AP_Int16 my_new_parameter;                  // my new parameter's description goes here
+
+
 // Global parameter class.
 //
 class Parameters {
@@ -386,6 +389,7 @@ public:
 
         // the k_param_* space is 9-bits in size
         // 511: reserved
+        k_param_my_new_parameter,       // 258
     };
 
     AP_Int16        format_version;
@@ -399,6 +403,7 @@ public:
     AP_Float        throttle_filt;
     AP_Int16        throttle_behavior;
     AP_Float        pilot_takeoff_alt;
+    AP_Float        my_new_parameter;                  // my new parameter's description goes here
 
 #if MODE_RTL_ENABLED == ENABLED
     AP_Int32        rtl_altitude;

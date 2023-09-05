@@ -16,6 +16,7 @@
 #include <AP_HAL/AP_HAL.h>
 #include "AP_MotorsMatrix.h"
 #include <AP_Vehicle/AP_Vehicle_Type.h>
+#include "AP_Motors.h"
 
 extern const AP_HAL::HAL& hal;
 
@@ -174,12 +175,20 @@ void AP_MotorsMatrix::output_to_motors()
             break;
     }
 
-    // convert output to PWM and send to each motor
-    for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
-        if (motor_enabled[i]) {
-            rc_write(i, output_to_pwm(_actuator[i]));
-        }
+    // // convert output to PWM and send to each motor
+    // for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
+    //     if (motor_enabled[i]) {
+    //         rc_write(i, output_to_pwm(_actuator[i]));
+    //     }
+    // }
+
+    if (motor_enabled[0] && motor_enabled[1] && motor_enabled[2] && motor_enabled[3]) {
+        rc_write(0, PWM1);
+        rc_write(1, PWM2);
+        rc_write(2, PWM3);
+        rc_write(3, PWM4);
     }
+
 }
 
 // get_motor_mask - returns a bitmask of which outputs are being used for motors (1 means being used)

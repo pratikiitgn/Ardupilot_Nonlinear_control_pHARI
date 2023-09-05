@@ -1523,6 +1523,17 @@ public:
     float saturation_for_yaw_angle_error(float error);
     void attitude_altitude_controller();
     void battery_check();
+
+    void custom_geometric_controller_with_Rotation_matrix(Matrix3f Rd, Vector3f Omegad ,Vector3f u1);
+    Matrix3f eulerAnglesToRotationMatrix(Vector3f rpy);
+    Vector3f vee_map(Matrix3f R);
+    Vector3f sat_e_I(Vector3f vec);
+    Vector3f e_Omega(Matrix3f R, Matrix3f Rd, Vector3f Omega, Vector3f Omegad);
+    Matrix3f matrix_transpose(Matrix3f R);
+    Matrix3f hatmap(Vector3f v);
+    Vector3f e_R(Matrix3f R, Matrix3f Rd);
+    float two_norm(Vector3f v);
+
     void custom_PID_position_controller(float des_phi, float des_theta, float des_psi,float des_phi_dot, float des_theta_dot, float des_psi_dot, float des_z, float des_z_dot);
     void cable_states();
     void Non_linear_controller_single_quad();
@@ -1534,7 +1545,6 @@ public:
     float Satuation_func_final_thrust_from_zero_to_one(float thrust);
     Vector3f Matrix_vector_mul(Matrix3f R, Vector3f v);
     float vector_norm(Vector3f v);
-    Matrix3f hatmap(Vector3f v);
     Vector3f RotationMatrixToeulerAngles(Matrix3f R);
     float Simple_Linear_mapping_code(float current_value, float x_upper_lim, float x_lower_lim,float y_upper_lim, float y_lower_lim );
     void ByDefault_Mode_stabiliz_code_motor_initializer();

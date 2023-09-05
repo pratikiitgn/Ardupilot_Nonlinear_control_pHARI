@@ -1,4 +1,8 @@
 #include "Copter.h"
+#include "mycontroller_usercode.h"
+#include <AP_HAL/AP_HAL.h>
+
+
 
 /*
    This program is free software: you can redistribute it and/or modify
@@ -95,6 +99,14 @@ const AP_Param::Info Copter::var_info[] = {
     // @Values: 0:None,1:Roll,2:Pitch,4:Yaw,8:AccelZ
     // @Bitmask: 0:Roll,1:Pitch,2:Yaw,3:AccelZ
     GSCALAR(gcs_pid_mask,           "GCS_PID_MASK",     0),
+
+    // @Param: MY_NEW_PARAMETER
+    // @DisplayName: My New Parameter
+    // @Description: A description of my new parameter goes here
+    // @Range: -32768 32767
+    // @User: Advanced
+    GSCALAR(my_new_parameter, "MY_NEW_PARAMETER", MY_NEW_PARAMETER_DEFAULT),
+    // hal.console->printf("%f\n",my_new_parameter);
 
 #if MODE_RTL_ENABLED == ENABLED
     // @Param: RTL_ALT

@@ -3,14 +3,16 @@
 #include <stdlib.h>
 #include <math.h>
 #include <AP_Baro/AP_Baro.h>
-#include <AP_HAL/AP_HAL.h>
 #include <AP_Motors/AP_Motors_Class.h>
 #include <AP_Logger/LogStructure.h>
 #include <AP_Logger/AP_Logger.h>  
 #include "mycontroller_usercode.h"
+#include "Parameters.h"
+
 // float code_starting_flag = 0;
 #define ESC_HZ 490
 #define PI 3.14159265359
+int code_starting_flag = 0;
 
 // gains values
 
@@ -22,6 +24,21 @@ float Kd_y      = 0.0;    // 0.2 (best)
 
 float Kp_z      = 6.5;    // 0.5 (best)
 float Kd_z      = 1.6;    // 0.2 (best)
+
+// Gains for geometric controller
+float KR1           = 0.0;
+float KOmega1       = 0.0;
+float KI1           = 0.0;
+
+float KR2           = 0.0;
+float KOmega2       = 0.0;
+float KI2           = 0.0;
+
+float KR3           = 0.0;
+float KOmega3       = 0.0;
+float KI3           = 0.0;
+
+Vector3f e_I_val_old (0.0,0.0,0.0);
 
 int yaw_flag_start  = 0;
 
@@ -61,6 +78,8 @@ float quad_z_dot = 0.0;
 
 float latitude  = 0.0;
 float longitude = 0.0;
+
+float arm_length = 0.1768;
 
 int pwm__thrust_measurement = 1000;
 int flag_thrust_measurement = 0;
@@ -107,6 +126,18 @@ float Final_pitch_angle_TRO_single_quad = 0.0;  // rarnge [-3500 3500]
 float Final_yaw_rate_TRO_single_quad    = 0.0;  // rarnge [-20250 20250]
 float Final_throttle_TRO_single_quad    = 0.0;  // rarnge [ 0 1] - offset = 0.219
 
+uint16_t PWM1 = 1000;
+uint16_t PWM2 = 1000;
+uint16_t PWM3 = 1000;
+uint16_t PWM4 = 1000;
+
+float F         = 0.0;
+float Mb1       = 0.0;
+float Mb2       = 0.0;
+float Mb3       = 0.0;
+
+
+
 void ModeStabilize::run()
 {
 
@@ -122,7 +153,7 @@ void ModeStabilize::run()
         code_starting_flag = 1;
 
     }else{
-        
+    // hal.console("%d\n",my_new_parameter);
     /////////////////////////////////////
     /// Let's initialize the necessary functions/variables
     ///////////////////////////////////
@@ -140,139 +171,246 @@ void ModeStabilize::run()
     ////////////////////////// Main logic starts here //////////////////////////
     ////////////////////////////////////////////////////////////////////////////
 
-    if (RC_Channels::get_radio_in(CH_7) < 1200){
-        /////////////////////////////////////
-        /// This is default stabilize controller
-        /////////////////////////////////////
+        if (RC_Channels::get_radio_in(CH_7) < 1200){
+            // hal.console->printf("%3.3f,%3.3f,%3.3f,%3.3f\n", target_roll, target_pitch, target_yaw_rate,pilot_desired_throttle);
 
-        update_simple_mode();
+            //////////////////////////////////////////////////////////
+            /// Before turning into the TRO code lets initialize and reset the states of the system
+            //////////////////////////////////////////////////////////
 
-        // convert pilot input to lean angles
-        float target_roll, target_pitch;
-        get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, copter.aparm.angle_max);
+            yaw_initially = 0.0;
+            H_yaw   = 360.0-(ahrs.yaw_sensor)   / 100.0;     // degrees ;
 
-        // get pilot's desired yaw rate
-        float target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->norm_input_dz());
+            float quad_x_ini_inertial =  inertial_nav.get_position_xy_cm().x / 100.0;
+            float quad_y_ini_inertial =  inertial_nav.get_position_xy_cm().y / 100.0;
 
-        if (!motors->armed()) {
-            // Motors should be Stopped
-            motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::SHUT_DOWN);
-        } else if (copter.ap.throttle_zero
-                || (copter.air_mode == AirMode::AIRMODE_ENABLED && motors->get_spool_state() == AP_Motors::SpoolState::SHUT_DOWN)) {
-            // throttle_zero is never true in air mode, but the motors should be allowed to go through ground idle
-            // in order to facilitate the spoolup block
-
-            // Attempting to Land
-            motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::GROUND_IDLE);
-        } else {
-            motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::THROTTLE_UNLIMITED);
+            quad_x_ini =  cosf(yaw_initially)*quad_x_ini_inertial + sinf(yaw_initially)*quad_y_ini_inertial;
+            quad_y_ini = -sinf(yaw_initially)*quad_x_ini_inertial + cosf(yaw_initially)*quad_y_ini_inertial;
+            quad_z_ini =  inertial_nav.get_position_z_up_cm() / 100.0;
+            x_des      =  quad_x;
+            y_des      =  quad_y;
+            z_des      =  quad_z;
+            PWM1 = 1000;
+            PWM2 = 1000;
+            PWM3 = 1000;
+            PWM4 = 1000;
+            // hal.console->printf("%3.3f,%3.3f\n", quad_z,z_des);
+            // hal.console->printf("%3.3f,%3.3f\n", quad_x,x_des);
         }
+        else if (RC_Channels::get_radio_in(CH_7) > 1400 )
+        {
+            // hal.console->printf("%3.3f,%3.3f\n", quad_z,z_des);
 
-        float pilot_desired_throttle = get_pilot_desired_throttle();
+            /////////////////////////////////////
+            /// TRO 23 controller for single quad starts here
+            ////////////////////////////////////
 
-        switch (motors->get_spool_state()) {
-        case AP_Motors::SpoolState::SHUT_DOWN:
-            // Motors Stopped
-            attitude_control->reset_yaw_target_and_rate();
-            attitude_control->reset_rate_controller_I_terms();
-            pilot_desired_throttle = 0.0f;
-            break;
-
-        case AP_Motors::SpoolState::GROUND_IDLE:
-            // Landed
-            attitude_control->reset_yaw_target_and_rate();
-            attitude_control->reset_rate_controller_I_terms_smoothly();
-            pilot_desired_throttle = 0.0f;
-            break;
-
-        case AP_Motors::SpoolState::THROTTLE_UNLIMITED:
-            // clear landing flag above zero throttle
-            if (!motors->limit.throttle_lower) {
-                set_land_complete(false);
-            }
-            break;
-
-        case AP_Motors::SpoolState::SPOOLING_UP:
-        case AP_Motors::SpoolState::SPOOLING_DOWN:
-            // do nothing
-            break;
+            // if (copter.motors->armed()){
+                Non_linear_controller_single_quad();
+            // }else{
+                PWM1 = 1000;
+                PWM2 = 1000;
+                PWM3 = 1000;
+                PWM4 = 1000;
+            // }
+            
+            /////////////////////////////////////
+            /// TRO 23 controller for single quad ends here
+            ////////////////////////////////////
         }
-
-        // call attitude controller
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
-
-        // output pilot's throttle
-        attitude_control->set_throttle_out(pilot_desired_throttle, true, g.throttle_filt);
-
-        // hal.console->printf("%3.3f,%3.3f,%3.3f,%3.3f\n", target_roll, target_pitch, target_yaw_rate,pilot_desired_throttle);
-
-        //////////////////////////////////////////////////////////
-        ////// The default Mode_stabilize code ends here    //////
-        //////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////
-        /// Before turning into the TRO code lets initialize and reset the states of the system
-        //////////////////////////////////////////////////////////
-
-        yaw_initially = 0.0;
-        H_yaw   = 360.0-(ahrs.yaw_sensor)   / 100.0;     // degrees ;
-
-        float quad_x_ini_inertial =  inertial_nav.get_position_xy_cm().x / 100.0;
-        float quad_y_ini_inertial =  inertial_nav.get_position_xy_cm().y / 100.0;
-
-        quad_x_ini =  cosf(yaw_initially)*quad_x_ini_inertial + sinf(yaw_initially)*quad_y_ini_inertial;
-        quad_y_ini = -sinf(yaw_initially)*quad_x_ini_inertial + cosf(yaw_initially)*quad_y_ini_inertial;
-        quad_z_ini =  inertial_nav.get_position_z_up_cm() / 100.0;
-        x_des      =  quad_x;
-        y_des      =  quad_y;
-        z_des      =  quad_z;
-        // hal.console->printf("%3.3f,%3.3f\n", quad_z,z_des);
-        // hal.console->printf("%3.3f,%3.3f\n", quad_x,x_des);
-    }
-    else if (RC_Channels::get_radio_in(CH_7) > 1400 ){
-        // hal.console->printf("%3.3f,%3.3f\n", quad_z,z_des);
-
-        ////////////////////////////////////
-        // call default motor starter code from stabilize code
-        ////////////////////////////////////
-
-        update_simple_mode();
-
-        // convert pilot input to lean angles
-        float target_roll, target_pitch;
-        get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, copter.aparm.angle_max);
-
-        // get pilot's desired yaw rate
-        // float target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->norm_input_dz());
-
-        if (!motors->armed()) {
-            // Motors should be Stopped
-            motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::SHUT_DOWN);
-        } else if (copter.ap.throttle_zero
-                || (copter.air_mode == AirMode::AIRMODE_ENABLED && motors->get_spool_state() == AP_Motors::SpoolState::SHUT_DOWN)) {
-            // throttle_zero is never true in air mode, but the motors should be allowed to go through ground idle
-            // in order to facilitate the spoolup block
-
-            // Attempting to Land
-            motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::GROUND_IDLE);
-        } else {
-            motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::THROTTLE_UNLIMITED);
-        }
-
-        /////////////////////////////////////
-        /// TRO 23 controller for single quad starts here
-        ////////////////////////////////////
-
-        // if (copter.motors->armed()){
-            Non_linear_controller_single_quad();
-        // }
-        
-        /////////////////////////////////////
-        /// TRO 23 controller for single quad ends here
-        ////////////////////////////////////
-    }
     }
 }
+
+void ModeStabilize::Non_linear_controller_single_quad(){
+
+        // X direction desired position
+        if (H_pitch > -2.0 && H_pitch < 2.0){H_pitch = 0.0;}
+        if (H_pitch < -2.0){H_pitch = H_pitch + 2.0;}
+        if (H_pitch >  2.0){H_pitch = H_pitch - 2.0;}
+        float dt_x = 1.0/5000.0;
+        x_des       =  x_des + (-H_pitch) * dt_x;
+        if (x_des > 5.0){x_des = 5.0;}
+        if (x_des < -5.0){x_des = -5.0;}
+        x_des_dot = 0.0;
+
+        // Y direction desired position
+        if (H_roll > -2.0 && H_roll < 2.0){H_roll = 0.0;}
+        if (H_roll < -2.0){H_roll = H_roll + 2.0;}
+        if (H_roll >  2.0){H_roll = H_roll - 2.0;}
+        float dt_y = 1.0/5000.0;
+        y_des       =  y_des + (-H_roll) * dt_y;
+        if (y_des > 5.0){y_des = 5.0;}
+        if (y_des < -5.0){y_des = -5.0;}
+        y_des_dot = 0.0;
+
+        // Position controller
+        if (H_throttle > -20.0 && H_throttle < 20.0){H_throttle = 0.0;}
+        if (H_throttle < -20.0){H_throttle = H_throttle + 20.0;}
+        if (H_throttle >  20.0){H_throttle = H_throttle - 20.0;}
+        float dt_z = 1.0/50000.0;
+        z_des       =  z_des + H_throttle * dt_z;
+        if (z_des > 5.0){z_des = 5.0;}
+        if (z_des < -5.0){z_des = -5.0;}
+        z_des_dot = 0.0;
+
+        // error defination
+        float e_x       = x_des - quad_x;
+        float e_x_dot   = x_des_dot - quad_x_dot;
+
+        e_x = 0;
+        e_x_dot = 0;
+
+        float e_y       = y_des - quad_y;
+        float e_y_dot   = y_des_dot - quad_y_dot;
+
+        e_y = 0;
+        e_y_dot = 0;
+
+        float e_z       = z_des - quad_z;
+        float e_z_dot   = z_des_dot - quad_z_dot;
+        hal.console->printf("zd= %3.3f, z= %3.3f, ez= %3.3f, z_dot= %3.3f", z_des, quad_z, e_z, quad_z_dot);
+
+        Matrix3f K_xq(
+                Kp_x,0.0,0.0,
+                0.0,Kp_y,0.0,
+                0.0,0.0,Kp_z
+                );
+
+        Matrix3f K_xq_dot(
+                Kd_x,0.0,0.0,
+                0.0,Kd_y,0.0,
+                0.0,0.0,Kd_z
+                );
+
+        Vector3f e_xq(e_x,e_y,e_z);
+        Vector3f e_xq_dot(e_x_dot,e_y_dot,e_z_dot);
+        Vector3f e3_with_gravity(0.0,0.0, mass_quad * gravity);
+        Vector3f u_quad_pos(Matrix_vector_mul(K_xq,e_xq) + Matrix_vector_mul(K_xq_dot,e_xq_dot) + e3_with_gravity );
+        hal.console->printf("%3.3f,%3.3f,%3.3f\n", u_quad_pos[0],u_quad_pos[1],u_quad_pos[2]);
+        Vector3f b1c(cosf(imu_yaw*PI/180.0), sinf(imu_yaw*PI/180.0), 0);       // imu_yaw - degrees
+        // hal.console->printf("%3.3f,%3.3f,%3.3f,%3.3f\n", b1c[0],b1c[1],b1c[2],imu_yaw);
+        Vector3f b3d( u_quad_pos[0]/vector_norm(u_quad_pos), u_quad_pos[1]/vector_norm(u_quad_pos), u_quad_pos[2]/vector_norm(u_quad_pos));
+        // hal.console->printf("%3.3f,%3.3f,%3.3f,%3.3f,", b3d[0],b3d[1],b3d[2],imu_yaw);
+        Vector3f b2d(Matrix_vector_mul(hatmap(b3d),b1c));
+        Vector3f b1d(Matrix_vector_mul(hatmap(b2d),b3d));
+
+        Matrix3f R_d(   b1d[0], b2d[0], b3d[0],
+                        b1d[1], b2d[1], b3d[1],
+                        b1d[2], b2d[2], b3d[2]
+                        );
+        Vector3f Omegad_quadcopter(0.0,0.0,0.0);
+
+        custom_geometric_controller_with_Rotation_matrix(R_d, Omegad_quadcopter, u_quad_pos);
+}
+
+
+void ModeStabilize::custom_geometric_controller_with_Rotation_matrix(Matrix3f Rd, Vector3f Omegad ,Vector3f u1){
+
+        motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::SHUT_DOWN);  // AP_Motors class.cpp libraries
+
+        ///////////////////// Altitude controller /////////////////////
+
+            F  =  two_norm(u1) + 0.5;
+            // F = 10.0;
+            if (F > 20.0){ F = 20.0; }
+            if (F < 0.0){ F =  0.0;  }
+
+        ///////////////////// geometric attitude controller /////////////////////
+
+            Vector3f rpy(imu_roll*PI/180.0,imu_pitch*PI/180.0,imu_yaw*PI/180.0);
+            Vector3f Omega(imu_roll_dot*PI/180.0,imu_pitch_dot*PI/180.0,imu_yaw_dot*PI/180.0);
+
+            Matrix3f R(eulerAnglesToRotationMatrix(rpy));
+
+            Matrix3f R_d(   0,0,0,
+                        0,0,0,
+                        0,0,0
+                        );
+
+            float c2 = 2.0;
+            // float c1 = 1.0;
+
+            Vector3f e_R_val        = e_R(R,Rd);
+            Vector3f e_Omega_val    = e_Omega(R,Rd,Omega,Omegad);
+            Vector3f e_I_val        = e_Omega_val + Vector3f(e_R_val[0]*c2,e_R_val[1]*c2,e_R_val[2]*c2);
+            Vector3f e_I_val_sum    = sat_e_I(e_I_val_old + e_I_val);
+            e_I_val_old             = e_I_val;
+
+        /////////////////////// Manual gain tuning  ///////////////////////
+
+            KR1         = 0.9;  // 0.6 (TB best)  //0.4
+            KOmega1     = 21;   // 10.5(TB best)  //0.5
+            KI1         = 0.0;  // 0.1 (TB best)  //0.1
+
+            KR2         = 1.3;  // 1.3  (TB good)
+            KOmega2     = 24.0; // 24 (TB good)
+            KI2         = 0.0;  // 0.1  (TB good)
+
+            KR3         = 4.5;  // 6.0  (TB good)
+            KOmega3     = 14.5; // 10.5 (TB good)
+            KI3         = 0.1;  // 0.1  (TB good)
+
+            Matrix3f KR(
+                        KR1,0.0,0.0,
+                        0.0,KR2,0.0,
+                        0.0,0.0,KR3
+                        );
+            Matrix3f KOmega(
+                        KOmega1,0.0,0.0,
+                        0.0,KOmega2,0.0,
+                        0.0,0.0,KOmega3
+                        );
+            Matrix3f KI(
+                        KI1,0.0,0.0,
+                        0.0,KI2,0.0,
+                        0.0,0.0,KI3
+                        );
+            // Intertia matrix
+            Matrix3f JJ(
+                    0.0113, 0.0 , 0.0,
+                    0.0, 0.0133,0.0,
+                    0.0,0.0,0.0187
+            );
+
+            Vector3f M( Matrix_vector_mul(KR,e_R_val) + Matrix_vector_mul(KOmega,e_Omega_val) + Matrix_vector_mul(KI,e_I_val_sum) + Omega % Matrix_vector_mul(JJ,Omega));
+            M = ( Matrix_vector_mul(KR,e_R_val));
+            // M = ( Matrix_vector_mul(KR,e_R_val) + Matrix_vector_mul(KOmega,e_Omega_val));
+
+            // Mb1 =  M[0];
+            // Mb2 =  M[1];
+            // Mb3 =  M[2];
+            
+            // hal.console->printf("%f,%f,%f,%f,%f,%f\n",Mb1,Mb2,Mb3,H_yaw,imu_yaw,F);
+
+            Mb1 =  0.0;
+            Mb2 =  0.0;
+            Mb3 =  0.0;
+
+            float FM_devided_FF = 0.31;
+
+            float function_F1 = F/4.0 - Mb1 / (4.0 * arm_length) - Mb2 / (4.0 * arm_length) +  Mb3 / (4.0 * FM_devided_FF);
+            float function_F2 = F/4.0 + Mb1 / (4.0 * arm_length) + Mb2 / (4.0 * arm_length) +  Mb3 / (4.0 * FM_devided_FF);
+            float function_F3 = F/4.0 + Mb1 / (4.0 * arm_length) - Mb2 / (4.0 * arm_length) -  Mb3 / (4.0 * FM_devided_FF);
+            float function_F4 = F/4.0 - Mb1 / (4.0 * arm_length) + Mb2 / (4.0 * arm_length) -  Mb3 / (4.0 * FM_devided_FF);
+
+            PWM1 = Inverse_thrust_function(function_F1);
+            PWM2 = Inverse_thrust_function(function_F2);
+            PWM3 = Inverse_thrust_function(function_F3);
+            PWM4 = Inverse_thrust_function(function_F4);
+
+            // hal.console->printf("PWM1-> %d, PWM2-> %d, PWM3-> %d, PWM4-> %d  \n", PWM1, PWM2, PWM3, PWM4);
+
+            // hal.console->printf("%f,%f,%f,%f,%f,%f,%f,%f,%f\n",H_roll,imu_roll,e_R_val[0],H_pitch,imu_pitch,e_R_val[1],H_yaw,imu_yaw,e_R_val[2]);
+            // hal.console->printf("%f,%f,%f,%f,%f,%f\n",H_roll,imu_roll,e_R_val[0],H_pitch,imu_pitch,e_R_val[1]);
+            // hal.console->printf("%f,%f,%f\n",e_R_val[0],e_R_val[1],e_R_val[2]);
+            // hal.console->printf("%f,%f,%f\n",e_R_val[0],e_R_val[1],e_R_val[2]);
+
+            PWM1 = 1000;
+            PWM2 = 1000;
+            PWM3 = 1000;
+            PWM4 = 1000;
+}
+
 
 void ModeStabilize::battery_check(){
     // battvolt=copter.battery_volt();
@@ -349,75 +487,6 @@ void ModeStabilize::pilot_input(){
 
     float dt_yaw = 1.0/100.0;
     H_yaw = wrap_360(H_yaw + H_yaw_rate*dt_yaw);
-
-
-
-    // hal.console->printf("%3.3f,%3.3f,%3.3f,%3.3f\n", H_roll,H_pitch, H_yaw,H_throttle);
-
-    //// To inactivate XY controller
-    // For y direction
-    // if (H_roll < -5.0 || H_roll > 5.0){
-    //     des_phi_y = 0.0;
-    //     y_des_flag = 0;
-    //     timer_y_des = 0;
-    //     timer_y_des_flag = 0;}
-    // else{
-    //     if (timer_y_des_flag == 0){
-    //         timer_y_des_start = AP_HAL::millis()/1000.0;
-    //         timer_y_des_flag = 1;}
-    //     else{
-    //         timer_y_des = AP_HAL::millis()/1000.0 - timer_y_des_start;
-    //     }
-
-    //     if (timer_y_des > 1.0){
-    //         if (y_des_flag == 0 ){
-    //                 y_des = quad_y;
-    //                 y_des_flag = 1;}
-    //         }
-    //     else{
-    //         des_phi_y = 0.0;
-    //     }
-    // }
-
-    // // For x direction
-    // if (H_pitch < -5.0 || H_pitch > 5.0){
-    //     des_theta_x = 0.0;
-    //     x_des_flag = 0;
-    //     timer_x_des = 0;
-    //     timer_x_des_flag = 0;}
-    // else{
-    //     if (timer_x_des_flag == 0){
-    //         timer_x_des_start = AP_HAL::millis()/1000.0;
-    //         timer_x_des_flag = 1;}
-    //     else{
-    //         timer_x_des = AP_HAL::millis()/1000.0 - timer_x_des_start;
-    //     }
-
-    //     if (timer_x_des > 1.0){
-    //         if (x_des_flag == 0 ){
-    //                 x_des = quad_x;
-    //                 x_des_flag = 1;}
-    //         }
-    //     else{
-    //         des_theta_x = 0.0;
-    //     }
-    // }
-////////
-
-    ////  for safe landing
-    // if (H_throttle < -450.0){
-    //     if (landing_timer_flag == 0){
-    //         landing_timer_flag = 1;
-    //         landing_timer_start = AP_HAL::millis()/1000.0;
-    //     }
-    //     landing_timer = AP_HAL::millis()/1000.0 - landing_timer_start;
-    // }
-    // else{
-    //     landing_timer = 0.0;  
-    //     landing_timer_flag = 0;
-    //     landing_timer_start = 0.0;
-    // }
-    ////////
 
 }
 void ModeStabilize::Satuation_func_Final_roll_angle(float angle){
@@ -513,132 +582,89 @@ Vector3f ModeStabilize::RotationMatrixToeulerAngles(Matrix3f R){
     return rpy;
 }
 
-void ModeStabilize::Non_linear_controller_single_quad(){
-    // if (copter.motors->armed()){
+int ModeStabilize::Inverse_thrust_function(float Force){
+    int PWM = 1200;
 
-        // X direction desired position
-        if (H_pitch > -2.0 && H_pitch < 2.0){H_pitch = 0.0;}
-        if (H_pitch < -2.0){H_pitch = H_pitch + 2.0;}
-        if (H_pitch >  2.0){H_pitch = H_pitch - 2.0;}
-        float dt_x = 1.0/5000.0;
-        x_des       =  x_des + (-H_pitch) * dt_x;
-        if (x_des > 5.0){x_des = 5.0;}
-        if (x_des < -5.0){x_des = -5.0;}
-        x_des_dot = 0.0;
+/////////////////////////// From the quadcopter motors  ///////////////////////////
 
-        // Y direction desired position
-        if (H_roll > -2.0 && H_roll < 2.0){H_roll = 0.0;}
-        if (H_roll < -2.0){H_roll = H_roll + 2.0;}
-        if (H_roll >  2.0){H_roll = H_roll - 2.0;}
-        float dt_y = 1.0/5000.0;
-        y_des       =  y_des + (-H_roll) * dt_y;
-        if (y_des > 5.0){y_des = 5.0;}
-        if (y_des < -5.0){y_des = -5.0;}
-        y_des_dot = 0.0;
+    if (battvolt >= 11.5 ){PWM = 1000 * (0.9206 + (sqrtf(12.8953 + 30.3264*Force)/(15.1632)));
+    }else{PWM = 1000 * (0.6021 + (sqrtf(33.2341 + 19.418*Force)/(9.5740)));}
+    if (PWM > 2000){PWM = 2000;}
+    if (PWM < 1000){PWM = 1000;}
 
-        // Position controller
-        if (H_throttle > -20.0 && H_throttle < 20.0){H_throttle = 0.0;}
-        if (H_throttle < -20.0){H_throttle = H_throttle + 20.0;}
-        if (H_throttle >  20.0){H_throttle = H_throttle - 20.0;}
-        float dt_z = 1.0/50000.0;
-        z_des       =  z_des + H_throttle * dt_z;
-        if (z_des > 5.0){z_des = 5.0;}
-        if (z_des < -5.0){z_des = -5.0;}
-        z_des_dot = 0.0;
+    return PWM;
+}
 
-        // error defination
-        float e_x       = x_des - quad_x;
-        float e_x_dot   = x_des_dot - quad_x_dot;
+Matrix3f ModeStabilize::eulerAnglesToRotationMatrix(Vector3f rpy){
+     // Calculate rotation about x axis
+    Matrix3f R_x (
+               1,       0,              0,
+               0,       cosf(rpy[0]),   -sinf(rpy[0]),
+               0,       sinf(rpy[0]),   cosf(rpy[0]));
+    // Calculate rotation about y axis
+    Matrix3f R_y (
+               cosf(rpy[1]),    0,      sinf(rpy[1]),
+               0,               1,      0,
+               -sinf(rpy[1]),   0,      cosf(rpy[1]));
+    // Calculate rotation about z axis
+    Matrix3f R_z (
+               cosf(rpy[2]),    -sinf(rpy[2]),      0,
+               sinf(rpy[2]),    cosf(rpy[2]),       0,
+               0,               0,                  1);
+    // Combined rotation matrix
+    Matrix3f R = R_z * R_x * R_y;
 
-        float e_y       = y_des - quad_y;
-        float e_y_dot   = y_des_dot - quad_y_dot;
+    return R;
+}
 
-        float e_z       = z_des - quad_z;
-        float e_z_dot   = z_des_dot - quad_z_dot;
+Vector3f ModeStabilize::e_R(Matrix3f R, Matrix3f Rd){
 
-        Matrix3f K_xq(
-                Kp_x,0.0,0.0,
-                0.0,Kp_y,0.0,
-                0.0,0.0,Kp_z
-                );
+    Vector3f error_vec(vee_map(matrix_transpose(Rd)*R - matrix_transpose(R)*Rd));
+    error_vec[0] = 0.5*error_vec[0];
+    error_vec[1] = 0.5*error_vec[1];
+    error_vec[2] = 0.5*error_vec[2];
 
-        Matrix3f K_xq_dot(
-                Kd_x,0.0,0.0,
-                0.0,Kd_y,0.0,
-                0.0,0.0,Kd_z
-                );
+    return error_vec;
 
-        Vector3f e_xq(e_x,e_y,e_z);
-        Vector3f e_xq_dot(e_x_dot,e_y_dot,e_z_dot);
-        float thrust_offset   = 0.828;
-        Vector3f e3_with_gravity(0.0,0.0, thrust_offset* mass_quad * gravity);
-        Vector3f u_quad_pos(Matrix_vector_mul(K_xq,e_xq) + Matrix_vector_mul(K_xq_dot,e_xq_dot) + e3_with_gravity );
-        // hal.console->printf("%3.3f,%3.3f,%3.3f\n", u_quad_pos[0],u_quad_pos[1],u_quad_pos[2]);
-        Vector3f b1c(cosf(imu_yaw*PI/180.0), sinf(imu_yaw*PI/180.0), 0);       // imu_yaw - degrees
-        // hal.console->printf("%3.3f,%3.3f,%3.3f,%3.3f\n", b1c[0],b1c[1],b1c[2],imu_yaw);
-        Vector3f b3d( u_quad_pos[0]/vector_norm(u_quad_pos), u_quad_pos[1]/vector_norm(u_quad_pos), u_quad_pos[2]/vector_norm(u_quad_pos));
-        hal.console->printf("%3.3f,%3.3f,%3.3f,%3.3f,", b3d[0],b3d[1],b3d[2],imu_yaw);
-        Vector3f b2d(Matrix_vector_mul(hatmap(b3d),b1c));
-        Vector3f b1d(Matrix_vector_mul(hatmap(b2d),b3d));
+}
 
-        Matrix3f R_d(   b1d[0], b2d[0], b3d[0],
-                        b1d[1], b2d[1], b3d[1],
-                        b1d[2], b2d[2], b3d[2]
-                        );
 
-        Vector3f Roll_Pitch_Yaw_desired(RotationMatrixToeulerAngles(R_d));
+float ModeStabilize::two_norm(Vector3f v){
+    float norm_val = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+    return sqrtf(norm_val);
+}
 
-        float phi_d     = Roll_Pitch_Yaw_desired[0];
-        float theta_d   = Roll_Pitch_Yaw_desired[1];
-        float psi_d     = Roll_Pitch_Yaw_desired[2];
-        hal.console->printf("| %3.3f,%3.3f,%3.3f\n", phi_d*180/PI,theta_d*180/PI,psi_d*180/PI);
+Vector3f ModeStabilize::e_Omega(Matrix3f R, Matrix3f Rd, Vector3f Omega, Vector3f Omegad){
 
-        phi_d = phi_d;
-        theta_d = theta_d;
+    Vector3f error_vec(Omega - (matrix_transpose(R)*Rd)*Omegad);
+    return error_vec;
 
-        float final_thrust = vector_norm(u_quad_pos);
-        final_thrust = Satuation_func_final_thrust_In_Newton(final_thrust);
-        final_thrust = Satuation_func_final_thrust_from_zero_to_one(final_thrust);
+}
+Matrix3f ModeStabilize::matrix_transpose(Matrix3f R){
+    
+    Matrix3f R_T(
+            R[0][0],R[1][0],R[2][0],
+            R[0][1],R[1][1],R[2][1],
+            R[0][2],R[1][2],R[2][2]
+            );
+    return R_T;
+}
 
-        // hal.console->printf("final_thrust -> %3.3f\n", final_thrust);
+Vector3f ModeStabilize::vee_map(Matrix3f R){
 
-        // final_thrust = 0.0;
-        // hal.console->printf("Cur-%3.3f,%3.3f,%3.3f|des-%3.3f,%3.3f,%3.3f| Th- %3.3f\n", quad_x,quad_y,quad_z,x_des,y_des,z_des,final_thrust);
+    Vector3f vector(R[2][1],R[0][2],R[1][0]);
+    return vector;
+}
 
-        // H_roll      = phi_d;        // -45 to 45
-        // H_pitch     = theta_d;       // -45 to 45
-        // hal.console->printf("Cur-%3.3f,%3.3f,%3.3f|des-%3.3f,%3.3f,%3.3f", quad_x,quad_y,quad_z,x_des,y_des,z_des);
-        // hal.console->printf("phd=%3.3f,thd=%3.3f,Yaw=%3.3f,%3.3f\n", H_roll,H_pitch,imu_yaw,Final_throttle_TRO_single_quad);
-        // H_roll      = phi_d;        // -45 to 45
-        // H_pitch     = theta_d;       // -45 to 45
-
-        // H_yaw_rate  = H_yaw_rate;    // -45 to 45
-        // H_throttle  = H_throttle;    // -500 to 500
-        
-        // Simple_Linear_mapping_code()
-
-        Final_roll_angle_TRO_single_quad    = H_roll* 100.0;
-        Final_pitch_angle_TRO_single_quad   = H_pitch* 100.0;
-        Final_yaw_rate_TRO_single_quad      = -H_yaw_rate* 500.0;
-        Final_throttle_TRO_single_quad      = final_thrust;
-
-        // hal.console->printf("%3.3f,%3.3f,%3.3f\n", quad_z,z_des,Final_throttle_TRO_single_quad);
-        // To make sure the inputs are within limits
-        // [1] Roll angle -> [-3500 3500]
-        // [2] Roll pitch -> [-3500 3500]
-        // [3] Roll angle -> [-20250 20250]
-        // [4] Throttle   -> [ 0 1] - offset = 0.219
-
-        Satuation_func_Final_roll_angle(Final_roll_angle_TRO_single_quad);
-        Satuation_func_Final_pitch_angle(Final_pitch_angle_TRO_single_quad);
-        Satuation_func_Final_yaw_rate(Final_yaw_rate_TRO_single_quad);
-        Satuation_func_Final_throttle(Final_throttle_TRO_single_quad);
-
-        hal.console->printf("|| %3.3f,%3.3f,%3.3f,%3.3f\n", Final_roll_angle_TRO_single_quad, Final_pitch_angle_TRO_single_quad, Final_yaw_rate_TRO_single_quad,Final_throttle_TRO_single_quad);
-
-        // call default attitude controller
-        attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(Final_roll_angle_TRO_single_quad,Final_pitch_angle_TRO_single_quad,Final_yaw_rate_TRO_single_quad);
-        // call default altitude controller
-        attitude_control->set_throttle_out(Final_throttle_TRO_single_quad, true, g.throttle_filt);
-    // }
+Vector3f ModeStabilize::sat_e_I(Vector3f vec){
+    float sat_lim = 0.5;
+    for (int ii=0; ii<3; ii++){
+        if (vec[ii] > sat_lim){
+            vec[ii] = sat_lim;
+        }
+        if (vec[ii] < -sat_lim){
+            vec[ii] = -sat_lim;
+        }
+    }
+    return vec;
 }
