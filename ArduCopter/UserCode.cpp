@@ -28,15 +28,13 @@ char pitch_char[]       = "11111";
 void Copter::userhook_init()
 {
 
-
     // put your initialisation code here
     // this will be called once at start-up
-        
+
     // hal.serial(1)->begin(115200); // telemetry 1 port Pixhawk Cube Orange
-    // hal.serial(2)->begin(2000000); // telemetry 2 port Pixhawk Cube Orange
+    hal.serial(2)->begin(115200); // telemetry 2 port Pixhawk Cube Orange
     // hal.serial(3)->begin(115200); // GPS1 port Pixhawk Cube Orange
     hal.serial(4)->begin(115200); // GPS2 port Pixhawk Cube Orange
-
 
 }
 #endif
