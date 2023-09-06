@@ -386,7 +386,7 @@ void ModeStabilize::custom_geometric_controller_with_Rotation_matrix(Matrix3f Rd
             Mb2 =  0.0;
             Mb3 =  0.0;
 
-            float FM_devided_FF = 0.31;
+            float FM_devided_FF = 0.0105;
 
             float function_F1 = F/4.0 - Mb1 / (4.0 * arm_length) - Mb2 / (4.0 * arm_length) +  Mb3 / (4.0 * FM_devided_FF);
             float function_F2 = F/4.0 + Mb1 / (4.0 * arm_length) + Mb2 / (4.0 * arm_length) +  Mb3 / (4.0 * FM_devided_FF);
@@ -582,15 +582,34 @@ Vector3f ModeStabilize::RotationMatrixToeulerAngles(Matrix3f R){
     return rpy;
 }
 
-int ModeStabilize::Inverse_thrust_function(float Force){
-    int PWM = 1200;
+int ModeStabilize::Inverse_thrust_function(float value){
+    int PWM = 1100;
+    
+    float p1 = 4.0972;
+    float p2 = -5.1304;
+    float p3 = 2.9273;
+    float p4 = 1.1487;
 
-/////////////////////////// From the quadcopter motors  ///////////////////////////
+    PWM = p1 * value*value*value + p2*value*value + p3*value + p4;
+    
+    if (PWM > 1950){PWM = 1950;}
+    if (PWM < 1100){PWM = 1100;}
 
-    if (battvolt >= 11.5 ){PWM = 1000 * (0.9206 + (sqrtf(12.8953 + 30.3264*Force)/(15.1632)));
-    }else{PWM = 1000 * (0.6021 + (sqrtf(33.2341 + 19.418*Force)/(9.5740)));}
-    if (PWM > 2000){PWM = 2000;}
-    if (PWM < 1000){PWM = 1000;}
+    return PWM;
+}
+
+int ModeStabilize::Inverse_thrust_function(float value){
+    int PWM = 1100;
+    
+    float p1 = 0.0043;
+    float p2 = -0.0533;
+    float p3 = 0.2984;
+    float p4 = 1.1487;
+    
+    PWM = p1 * value*value*value + p2*value*value + p3*value + p4;
+    
+    if (PWM > 1950){PWM = 1950;}
+    if (PWM < 1100){PWM = 1100;}
 
     return PWM;
 }
