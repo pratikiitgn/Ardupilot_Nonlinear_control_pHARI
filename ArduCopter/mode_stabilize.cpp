@@ -631,8 +631,10 @@ int ModeStabilize::Inverse_thrust_function(float value){
     float p3 = 0.2984;
     float p4 = 1.1487;
     
-    PWM = p1 * value*value*value + p2*value*value + p3*value + p4;
-    
+    float PWM_ = 1000.0 * (p1 * value * value * value + p2 * value * value + p3 * value + p4);
+
+    PWM = (int) PWM_;
+
     if (PWM > 1950){PWM = 1950;}
     if (PWM < 1100){PWM = 1100;}
 
