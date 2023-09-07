@@ -1543,6 +1543,7 @@ public:
     void Satuation_func_Final_throttle(float throttle_value);
     float Satuation_func_final_thrust_In_Newton(float thrust);
     float Satuation_func_final_thrust_from_zero_to_one(float thrust);
+    float Satuation_func_moments(float moment);
     float Satuation_func_position_error(float thrust);
     Vector3f Matrix_vector_mul(Matrix3f R, Vector3f v);
     float vector_norm(Vector3f v);

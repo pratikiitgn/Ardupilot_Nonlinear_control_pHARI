@@ -16,11 +16,11 @@ int code_starting_flag = 0;
 
 // gains values
 
-float Kp_x      = 1.0;    // 0.5 (best)
-float Kd_x      = 0.0;    // 0.2 (best)
+float Kp_x      = 2.0;    // 0.5 (best)
+float Kd_x      = 0.5;    // 0.2 (best)
 
-float Kp_y      = 1.0;    // 0.5 (best)
-float Kd_y      = 0.0;    // 0.2 (best)
+float Kp_y      = 2.0;    // 0.5 (best)
+float Kd_y      = 0.5;    // 0.2 (best)
 
 float Kp_z      = 20.5;    // 0.5 (best)
 float Kd_z      = 5.0;    // 0.2 (best)
@@ -221,7 +221,6 @@ void ModeStabilize::run()
                 PWM3 = 1000;
                 PWM4 = 1000;
             }
-            
             /////////////////////////////////////
             /// TRO 23 controller for single quad ends here
             ////////////////////////////////////
@@ -265,14 +264,14 @@ void ModeStabilize::Non_linear_controller_single_quad(){
         float e_x       = x_des - quad_x;
         float e_x_dot   = x_des_dot - quad_x_dot;
 
-        e_x = 0;
-        e_x_dot = 0;
+        // e_x = H_pitch;
+        // e_x_dot = 0;
 
         float e_y       = y_des - quad_y;
         float e_y_dot   = y_des_dot - quad_y_dot;
 
-        e_y = 0;
-        e_y_dot = 0;
+        // e_y = H_roll;
+        // e_y_dot = 0;
 
         float e_z       = z_des - quad_z;
         float e_z_dot   = z_des_dot - quad_z_dot;
@@ -281,7 +280,8 @@ void ModeStabilize::Non_linear_controller_single_quad(){
         e_y = Satuation_func_position_error(e_y);
         e_z = Satuation_func_position_error(e_z);
 
-        hal.console->printf("zd= %3.3f, z= %3.3f, ez= %3.3f, z_dot= %3.3f", z_des, quad_z, e_z, quad_z_dot);
+        // hal.console->printf("zd= %3.3f, z= %3.3f, ez= %3.3f, z_dot= %3.3f", z_des, quad_z, e_z, quad_z_dot);
+        // hal.console->printf("Xd->[%2.2f,%2.2f,%2.2f]", x_des,y_des,z_des);
 
         Matrix3f K_xq(
                 Kp_x,0.0,0.0,
@@ -300,9 +300,16 @@ void ModeStabilize::Non_linear_controller_single_quad(){
         Vector3f e3_with_gravity(0.0,0.0, mass_quad * gravity);
         Vector3f u_quad_pos(Matrix_vector_mul(K_xq,e_xq) + Matrix_vector_mul(K_xq_dot,e_xq_dot) + e3_with_gravity );
         // hal.console->printf("  |  u_q_pos_1 -> %3.3f,u_q_pos_1 -> %3.3f, u_q_pos_1 -> %3.3f\n", u_quad_pos[0],u_quad_pos[1],u_quad_pos[2]);
+        Vector3f u_final(u_quad_pos);
+
+        // if (u_final[2] < 0){
+
+        // }
+
+
         Vector3f b1c(cosf(H_yaw*PI/180.0), sinf(H_yaw*PI/180.0), 0);       // imu_yaw - degrees
         // hal.console->printf("%3.3f,%3.3f,%3.3f,%3.3f\n", b1c[0],b1c[1],b1c[2],imu_yaw);
-        Vector3f b3d( u_quad_pos[0]/vector_norm(u_quad_pos), u_quad_pos[1]/vector_norm(u_quad_pos), u_quad_pos[2]/vector_norm(u_quad_pos));
+        Vector3f b3d( u_final[0]/vector_norm(u_final), u_final[1]/vector_norm(u_final), u_final[2]/vector_norm(u_final));
         
         Vector3f b2d(Matrix_vector_mul(hatmap(b3d),b1c));
         Vector3f b1d(Matrix_vector_mul(hatmap(b2d),b3d));
@@ -314,9 +321,18 @@ void ModeStabilize::Non_linear_controller_single_quad(){
                         b1d[1], b2d[1], b3d[1],
                         b1d[2], b2d[2], b3d[2]
                         );
+
+        if (RC_Channels::get_radio_in(CH_7) > 1600 )
+        {
+            Vector3f rpy_human((H_roll*PI/180.0)/2.0,(-H_pitch*PI/180.0)/2.0,H_yaw*PI/180.0);
+
+            R_d = eulerAnglesToRotationMatrix(rpy_human);
+        }
+
+
         Vector3f Omegad_quadcopter(0.0,0.0,0.0);
 
-        custom_geometric_controller_with_Rotation_matrix(R_d, Omegad_quadcopter, u_quad_pos);
+        custom_geometric_controller_with_Rotation_matrix(R_d, Omegad_quadcopter, u_final);
 }
 
 
@@ -328,13 +344,13 @@ void ModeStabilize::custom_geometric_controller_with_Rotation_matrix(Matrix3f Rd
 
             F  =  two_norm(u1) + 0.5;
             // F = 10.0;
-            if (F > 20.0){ F = 20.0; }
+            if (F > 23.54){ F = 23.54; }
             if (F < 0.0){ F =  0.0;  }
             if (u1[2] < 0)
             {
                 F = 0;
             }
-            hal.console->printf("F-> [%3.3f] \n", F);
+            // hal.console->printf("F-> [%3.3f] \n", F);
 
         ///////////////////// geometric attitude controller /////////////////////
 
@@ -363,11 +379,11 @@ void ModeStabilize::custom_geometric_controller_with_Rotation_matrix(Matrix3f Rd
 
         /////////////////////// Manual gain tuning  ///////////////////////
 
-            KR1         = 4.0;  // 0.9
+            KR1         = 3.5;  // 0.9
             KOmega1     = 25.0;   // 21
             KI1         = 0.0;  // 0.0
 
-            KR2         = 4.0;  // 1.3
+            KR2         = 3.5;  // 1.3
             KOmega2     = 30.0; // 24 
             KI2         = 0.0;  // 0.0
 
@@ -402,10 +418,11 @@ void ModeStabilize::custom_geometric_controller_with_Rotation_matrix(Matrix3f Rd
             // M = ( Matrix_vector_mul(KR,e_R_val));
             // M = ( Matrix_vector_mul(KR,e_R_val) + Matrix_vector_mul(KOmega,e_Omega_val));
 
-            Mb1 =  -M[0];
-            Mb2 =  -M[1];
-            Mb3 =  M[2];
-            // hal.console->printf("  |  Mb1 -> %3.3f,Mb2 -> %3.3f, Mb3 -> %3.3f\n", M[0],M[1],M[2]);
+            Mb1 =  Satuation_func_moments(-M[0]);
+            Mb2 =  Satuation_func_moments(-M[1]);
+            Mb3 =  Satuation_func_moments(M[2]);
+
+            // hal.console->printf("F-> %3.3f | Mb-> [%3.3f,%3.3f,%3.3f] | ", F, Mb1,Mb2,Mb3);
 
             // hal.console->printf("M1->%f,M2->%f,M3->%f,F->%f\n",M[0],M[1],M[2],F);
 
@@ -413,19 +430,24 @@ void ModeStabilize::custom_geometric_controller_with_Rotation_matrix(Matrix3f Rd
             // Mb2 =  0.0;
             // Mb3 =  0.0;
 
-            float FM_devided_FF = 0.0105;
+            // Mb1 = 0.1;
+            // Mb2 = 0.0;
+            // Mb3 = 0.0;
+            // F = 12;
 
-            float function_F1 = F/4.0 - Mb1 / (4.0 * arm_length) - Mb2 / (4.0 * arm_length) +  Mb3 / (4.0 * FM_devided_FF);
-            float function_F2 = F/4.0 + Mb1 / (4.0 * arm_length) + Mb2 / (4.0 * arm_length) +  Mb3 / (4.0 * FM_devided_FF);
-            float function_F3 = F/4.0 + Mb1 / (4.0 * arm_length) - Mb2 / (4.0 * arm_length) -  Mb3 / (4.0 * FM_devided_FF);
-            float function_F4 = F/4.0 - Mb1 / (4.0 * arm_length) + Mb2 / (4.0 * arm_length) -  Mb3 / (4.0 * FM_devided_FF);
+            // float FM_devided_FF = 0.0105;
+
+            float function_F1 = F/4.0 - Mb1 / (4.0 * arm_length) - Mb2 / (4.0 * arm_length) +  Mb3 / (4.0 * arm_length);
+            float function_F2 = F/4.0 + Mb1 / (4.0 * arm_length) + Mb2 / (4.0 * arm_length) +  Mb3 / (4.0 * arm_length);
+            float function_F3 = F/4.0 + Mb1 / (4.0 * arm_length) - Mb2 / (4.0 * arm_length) -  Mb3 / (4.0 * arm_length);
+            float function_F4 = F/4.0 - Mb1 / (4.0 * arm_length) + Mb2 / (4.0 * arm_length) -  Mb3 / (4.0 * arm_length);
 
             PWM1 = Inverse_thrust_function(function_F1);
             PWM2 = Inverse_thrust_function(function_F2);
             PWM3 = Inverse_thrust_function(function_F3);
             PWM4 = Inverse_thrust_function(function_F4);
 
-            // hal.console->printf("PWM1-> %d, PWM2-> %d, PWM3-> %d, PWM4-> %d  \n", PWM1, PWM2, PWM3, PWM4);
+            // hal.console->printf("PWMs-> [%d,%d,%d,%d] \n", PWM1, PWM2, PWM3, PWM4);
 
             // hal.console->printf("%f,%f,%f,%f,%f,%f,%f,%f,%f\n",H_roll,imu_roll,e_R_val[0],H_pitch,imu_pitch,e_R_val[1],H_yaw,imu_yaw,e_R_val[2]);
             // hal.console->printf("%f,%f,%f,%f,%f,%f\n",H_roll,imu_roll,e_R_val[0],H_pitch,imu_pitch,e_R_val[1]);
@@ -485,6 +507,7 @@ void ModeStabilize::quad_states(){
     imu_yaw_dot     = -(ahrs.get_gyro().z);             // degrees/second
 
     // hal.console->printf("%3.3f,%3.3f\n", imu_yaw,imu_yaw_dot);
+    // hal.console->printf("%3.3f,%3.3f,%3.3f\n", imu_roll,imu_pitch,imu_yaw);
 
 }
 
@@ -509,7 +532,7 @@ void ModeStabilize::cable_states(){
     qc_dot = (qc - qc_old)/rate_of_Mode_stabilize;
     qc_old = qc;
 
-    // hal.console->printf("%3.3f,%3.3f,%3.3f\n", qc[0],qc[1],qc[2]);
+    hal.console->printf("%3.3f,%3.3f,%3.3f\n", qc[0],qc[1],qc[2]);
     // hal.console->printf("%3.3f,%3.3f\n", qc[0],qc_dot[0]);
 }
 
@@ -526,7 +549,7 @@ void ModeStabilize::pilot_input(){
     H_yaw_rate  = -(double)(channel_yaw->get_control_in()) / 100.0;
     H_throttle  =  (double)channel_throttle->get_control_in()-500.0;
 
-    float dt_yaw = 1.0/100.0;
+    float dt_yaw = 1.0/300.0;
     H_yaw = wrap_360(H_yaw + H_yaw_rate*dt_yaw);
 
 }
@@ -714,3 +737,21 @@ Vector3f ModeStabilize::sat_e_I(Vector3f vec){
     }
     return vec;
 }
+
+float ModeStabilize::Satuation_func_moments(float moment)
+{
+    float max_thrust_motor_produce = 0.6*9.81;
+
+    float max_thrust_in_Newton =  max_thrust_motor_produce*arm_length*4.0;
+    float min_thrust_in_Newton = -max_thrust_motor_produce*arm_length*4.0;
+    if (moment > max_thrust_in_Newton)
+    {
+        moment = max_thrust_in_Newton;
+    }
+    if (moment < min_thrust_in_Newton)
+    {
+        moment = min_thrust_in_Newton;
+    }
+
+    return moment;
+};
