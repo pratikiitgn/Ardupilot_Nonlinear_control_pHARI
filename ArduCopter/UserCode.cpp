@@ -54,7 +54,8 @@ void Copter::userhook_FastLoop()
     imu_roll_log        =  (ahrs.roll_sensor)  / 100.0;     // degrees 
     imu_pitch_log       = -(ahrs.pitch_sensor) / 100.0;     // degrees 
     imu_yaw_log         = 360.0-(ahrs.yaw_sensor)   / 100.0;     // degrees 
- 
+    // hal.console->printf("IMU-> [%3.3f,%3.3f,%3.3f] | ",imu_roll_log,imu_pitch_log, imu_yaw_log);
+    
 
     // hal.console->printf("From usercode \n");
     getEncoderData();
@@ -324,9 +325,9 @@ void Copter::getEncoderData()
         int encoder_roll_int      = atoi(roll_char);
         int encoder_pitch_int     = atoi(pitch_char);
 
-        encoder_roll_feedback  = (float)((encoder_roll_int  - 50000.0) / 100.0);
-        encoder_pitch_feedback = (float)((encoder_pitch_int - 50000.0) / 100.0);
-        
+        encoder_roll_feedback  = -(float)((encoder_roll_int  - 50000.0) / 100.0);
+        encoder_pitch_feedback = -(float)((encoder_pitch_int - 50000.0) / 100.0);
+        encoder_pitch_feedback = encoder_pitch_feedback - 8.5;
         // hal.console->printf("%3.3f,", encoder_roll_feedback);
         // hal.console->printf("%3.3f\n", encoder_pitch_feedback);
 
@@ -344,6 +345,8 @@ void Copter::getEncoderData()
             encoder_pitch_feedback = -60.0;
         }
 
+        // hal.console->printf("ENCO-> [%3.3f,%3.3f] | ",encoder_roll_feedback,encoder_pitch_feedback);
+
         // hal.console->printf("%3.3f,", encoder_roll_feedback);
         // hal.console->printf("%3.3f\n", encoder_pitch_feedback);
 
@@ -352,7 +355,7 @@ void Copter::getEncoderData()
 
         // hal.console->printf("CAM_device_data -> %f,%f\n",encoder_roll_feedback,encoder_pitch_feedback);
 
-        Vector3f rpy(imu_roll*PI/180.0,imu_pitch*PI/180.0,0*PI/180.0);
+        Vector3f rpy(imu_roll*PI/180.0,imu_pitch*PI/180.0,imu_yaw*PI/180.0);
         Vector3f e_3_neg(0,0,-1);
         Matrix3f R(eulerAnglesToRotationMatrix(rpy));
 
@@ -372,5 +375,5 @@ void Copter::getEncoderData()
 
         qc = Matrix_vector_mul(R,Matrix_vector_mul(CAM_R_x,Matrix_vector_mul(CAM_R_y,e_3_neg)));
 
-        // hal.console->printf("%3.3f,%3.3f,%3.3f\n", qc[0],qc[1],qc[2]);
+        // hal.console->printf("qc-> [%3.3f,%3.3f,%3.3f] \n", qc[0],qc[1],qc[2]);
 }

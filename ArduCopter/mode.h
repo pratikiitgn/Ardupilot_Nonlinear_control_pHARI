@@ -1528,6 +1528,7 @@ public:
     Matrix3f eulerAnglesToRotationMatrix(Vector3f rpy);
     Vector3f vee_map(Matrix3f R);
     Vector3f sat_e_I(Vector3f vec);
+    float sat_e_Z(float val);
     Vector3f e_Omega(Matrix3f R, Matrix3f Rd, Vector3f Omega, Vector3f Omegad);
     Matrix3f matrix_transpose(Matrix3f R);
     Matrix3f hatmap(Vector3f v);
