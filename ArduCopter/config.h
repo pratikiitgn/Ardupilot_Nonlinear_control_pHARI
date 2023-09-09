@@ -82,22 +82,22 @@
  # define TRO_QUAD_POS_KP_Y_DEFAULT      4.0     
 #endif
 #ifndef TRO_QUAD_POS_KP_Z_DEFAULT
- # define TRO_QUAD_POS_KP_Z_DEFAULT      15.0     
+ # define TRO_QUAD_POS_KP_Z_DEFAULT      20.0     
 #endif
 #ifndef TRO_QUAD_POS_KD_X_DEFAULT
  # define TRO_QUAD_POS_KD_X_DEFAULT      0.8     
 #endif
 #ifndef TRO_QUAD_POS_KD_Y_DEFAULT
- # define TRO_QUAD_POS_KD_Y_DEFAULT      3.0     
+ # define TRO_QUAD_POS_KD_Y_DEFAULT      1.3     
 #endif
 #ifndef TRO_QUAD_POS_KD_Z_DEFAULT
- # define TRO_QUAD_POS_KD_Z_DEFAULT      4.0     
+ # define TRO_QUAD_POS_KD_Z_DEFAULT      4.5     
 #endif
 #ifndef TRO_QUAD_POS_KI_X_DEFAULT
  # define TRO_QUAD_POS_KI_X_DEFAULT      0.0     
 #endif
 #ifndef TRO_QUAD_POS_KI_Y_DEFAULT
- # define TRO_QUAD_POS_KI_Y_DEFAULT      0.0     
+ # define TRO_QUAD_POS_KI_Y_DEFAULT      0.05     
 #endif
 #ifndef TRO_QUAD_POS_KI_Z_DEFAULT
  # define TRO_QUAD_POS_KI_Z_DEFAULT      0.05

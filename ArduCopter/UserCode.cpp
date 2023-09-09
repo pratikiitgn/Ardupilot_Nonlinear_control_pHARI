@@ -122,7 +122,7 @@ void Copter::userhook_FastLoop()
 #ifdef USERHOOK_50HZLOOP
 void Copter::userhook_50Hz()
 {
-    gcs().send_text(MAV_SEVERITY_INFO,"commandGCS: Hi Pratik %3.3f ",imu_roll_log);
+    // gcs().send_text(MAV_SEVERITY_INFO,"commandGCS: Hi Pratik %3.3f \n",imu_roll_log);
 
 }
 #endif

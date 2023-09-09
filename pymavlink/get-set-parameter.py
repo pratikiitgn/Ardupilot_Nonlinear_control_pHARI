@@ -15,7 +15,8 @@ import time
 from pymavlink import mavutil
 
 # Connect to Pixhawk over serial port
-master = mavutil.mavlink_connection('/dev/ttyACM0')
+# master = mavutil.mavlink_connection('/dev/ttyACM0')
+master = mavutil.mavlink_connection('/dev/ttyUSB0')
 
 # Wait for the heartbeat message to confirm the connection
 master.wait_heartbeat()
