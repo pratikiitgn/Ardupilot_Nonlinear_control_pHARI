@@ -1,5 +1,4 @@
 #include "Copter.h"
-#include "mycontroller_usercode.h"
 #include <AP_HAL/AP_HAL.h>
 
 
@@ -102,11 +101,35 @@ const AP_Param::Info Copter::var_info[] = {
 
     // @Param: MY_NEW_PARAMETER
     // @DisplayName: My New Parameter
-    // @Description: A description of my new parameter goes here
+    // @Description: A description of my NEW parameter goes here
     // @Range: -32768 32767
     // @User: Advanced
     GSCALAR(my_new_parameter, "MY_NEW_PARAMETER", MY_NEW_PARAMETER_DEFAULT),
-    // hal.console->printf("%f\n",my_new_parameter);
+
+    GSCALAR(TRO_quad_att_KR1, "QUAD_ATT_KR1", TRO_QUAD_ATT_KR1_DEFAULT),
+    GSCALAR(TRO_quad_att_KR2, "QUAD_ATT_KR2", TRO_QUAD_ATT_KR2_DEFAULT),
+    GSCALAR(TRO_quad_att_KR3, "QUAD_ATT_KR3", TRO_QUAD_ATT_KR3_DEFAULT),
+    GSCALAR(TRO_quad_att_KOmega1, "QUAD_ATT_KOMEGA1", TRO_QUAD_ATT_KOMEGA1_DEFAULT),
+    GSCALAR(TRO_quad_att_KOmega2, "QUAD_ATT_KOMEGA2", TRO_QUAD_ATT_KOMEGA2_DEFAULT),
+    GSCALAR(TRO_quad_att_KOmega3, "QUAD_ATT_KOMEGA3", TRO_QUAD_ATT_KOMEGA3_DEFAULT),
+    GSCALAR(TRO_quad_att_KI1, "QUAD_ATT_KI1", TRO_QUAD_ATT_KI1_DEFAULT),
+    GSCALAR(TRO_quad_att_KI2, "QUAD_ATT_KI2", TRO_QUAD_ATT_KI2_DEFAULT),
+    GSCALAR(TRO_quad_att_KI3, "QUAD_ATT_KI3", TRO_QUAD_ATT_KI3_DEFAULT),
+    GSCALAR(TRO_quad_pos_Kp_x, "QUAD_POS_KP_X", TRO_QUAD_POS_KP_X_DEFAULT),
+    GSCALAR(TRO_quad_pos_Kp_y, "QUAD_POS_KP_Y", TRO_QUAD_POS_KP_Y_DEFAULT),
+    GSCALAR(TRO_quad_pos_Kp_z, "QUAD_POS_KP_Z", TRO_QUAD_POS_KP_Z_DEFAULT),
+    GSCALAR(TRO_quad_pos_Kd_x, "QUAD_POS_KD_X", TRO_QUAD_POS_KD_X_DEFAULT),
+    GSCALAR(TRO_quad_pos_Kd_y, "QUAD_POS_KD_Y", TRO_QUAD_POS_KD_Y_DEFAULT),
+    GSCALAR(TRO_quad_pos_Kd_z, "QUAD_POS_KD_Z", TRO_QUAD_POS_KD_Z_DEFAULT),
+    GSCALAR(TRO_quad_pos_Ki_x, "QUAD_POS_KI_X", TRO_QUAD_POS_KI_X_DEFAULT),
+    GSCALAR(TRO_quad_pos_Ki_y, "QUAD_POS_KI_Y", TRO_QUAD_POS_KI_Y_DEFAULT),
+    GSCALAR(TRO_quad_pos_Ki_z, "QUAD_POS_KI_Z", TRO_QUAD_POS_KI_Z_DEFAULT),
+    GSCALAR(TRO_cable_Kq1, "CABLE_KQ1", TRO_CABLE_KQ1_DEFAULT),
+    GSCALAR(TRO_cable_Kq2, "CABLE_KQ2", TRO_CABLE_KQ2_DEFAULT),
+    GSCALAR(TRO_cable_Kq3, "CABLE_KQ3", TRO_CABLE_KQ3_DEFAULT),
+    GSCALAR(TRO_cable_Kq1_dot, "CABLE_KQ1_DOT", TRO_CABLE_KQ1_DOT_DEFAULT),
+    GSCALAR(TRO_cable_Kq2_dot, "CABLE_KQ2_DOT", TRO_CABLE_KQ2_DOT_DEFAULT),
+    GSCALAR(TRO_cable_Kq3_dot, "CABLE_KQ3_DOT", TRO_CABLE_KQ3_DOT_DEFAULT),
 
 #if MODE_RTL_ENABLED == ENABLED
     // @Param: RTL_ALT

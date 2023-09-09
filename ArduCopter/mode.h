@@ -1536,7 +1536,7 @@ public:
     float two_norm(Vector3f v);
 
     void custom_PID_position_controller(float des_phi, float des_theta, float des_psi,float des_phi_dot, float des_theta_dot, float des_psi_dot, float des_z, float des_z_dot);
-    void cable_states();
+    // void cable_states();
     void Non_linear_controller_single_quad();
     void Satuation_func_Final_roll_angle(float angle);
     void Satuation_func_Final_pitch_angle(float angle);
@@ -1551,6 +1551,8 @@ public:
     Vector3f RotationMatrixToeulerAngles(Matrix3f R);
     float Simple_Linear_mapping_code(float current_value, float x_upper_lim, float x_lower_lim,float y_upper_lim, float y_lower_lim );
     void ByDefault_Mode_stabiliz_code_motor_initializer();
+    Vector3f attitude_error_on_s2(Vector3f q, Vector3f qd);
+    Vector3f attitude_dot_error_on_s2(Vector3f q, Vector3f qd,Vector3f q_dot, Vector3f qd_dot);
 
 protected:
 

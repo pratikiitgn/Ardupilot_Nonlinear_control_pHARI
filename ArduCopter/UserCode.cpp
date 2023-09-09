@@ -8,6 +8,7 @@
 #include <string.h>
 #include <math.h>
 #include <AP_GPS/AP_GPS.h>
+#include "GCS_Mavlink.h"
 
 #define PI 3.14159265359
 
@@ -23,6 +24,9 @@ float imu_yaw_log       = 0.0;
 char attitude[]         = "50000_50000";
 char roll_char[]        = "11111";
 char pitch_char[]       = "11111";
+
+Vector3f qc_old(0.0,0.0,0.0);
+
 
 #ifdef USERHOOK_INIT
 void Copter::userhook_init()
@@ -60,6 +64,9 @@ void Copter::userhook_FastLoop()
     // hal.console->printf("From usercode \n");
     getEncoderData();
     // hal.console->printf("ph_p %f, th_p - %f\n",encoder_roll_feedback,encoder_pitch_feedback); 
+
+    ///////////// getting states of quadcopter /////////////
+    cable_states();
 
     // char H_roll_[5]    = "";
     // char H_pitch_[5]   = "";
@@ -108,14 +115,14 @@ void Copter::userhook_FastLoop()
     // hal.serial(2)->printf("%d,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f,%0.2f\n",arm_disarm_flag,quad_x,quad_y,quad_z,x_des,y_des,z_des,imu_roll,imu_pitch,imu_yaw,H_roll,H_pitch,H_yaw_rate,H_yaw,F,Mb1,Mb2,Mb3);
 
     // hal.console->printf("%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",arm_disarm_flag,quad_x,quad_y,quad_z,imu_roll,imu_pitch,imu_yaw,H_roll,H_pitch,H_yaw_rate,H_yaw,F,Mb1,Mb2,Mb3);
-
+    
 }
 #endif
 
 #ifdef USERHOOK_50HZLOOP
 void Copter::userhook_50Hz()
 {
-
+    gcs().send_text(MAV_SEVERITY_INFO,"commandGCS: Hi Pratik %3.3f ",imu_roll_log);
 
 }
 #endif
@@ -308,7 +315,6 @@ void Copter::getEncoderData()
             // hal.console->printf("attitude from while loop-> %s\n",attitude);
         }
 
-        // hal.uartE->printf("%s\n",attitude);
         // hal.console->printf("attitude -> %s\n",attitude);
 
         for (int i = 0; i < 11; i++)
@@ -374,6 +380,46 @@ void Copter::getEncoderData()
                 );
 
         qc = Matrix_vector_mul(R,Matrix_vector_mul(CAM_R_x,Matrix_vector_mul(CAM_R_y,e_3_neg)));
+        qc = sat_q(qc);
 
         // hal.console->printf("qc-> [%3.3f,%3.3f,%3.3f] \n", qc[0],qc[1],qc[2]);
+}
+
+void Copter::cable_states(){
+    
+    // float rate_of_Mode_stabilize = 400.0;
+    float rate_of_Mode_stabilize = 1.0;
+    qc_dot = (qc - qc_old)/rate_of_Mode_stabilize;
+    qc_old = qc;
+
+    qc_dot = sat_q_dot(qc_dot);
+
+    // hal.console->printf("%3.3f,%3.3f,%3.3f\n", qc[0],qc[1],qc[2]);
+    // hal.console->printf("%3.3f,%3.3f\n", qc[1],qc_dot[1]);
+}
+
+Vector3f Copter::sat_q(Vector3f vec){
+    float sat_lim = 1;
+    for (int ii=0; ii<3; ii++){
+        if (vec[ii] > sat_lim){
+            vec[ii] = sat_lim;
+        }
+        if (vec[ii] < -sat_lim){
+            vec[ii] = -sat_lim;
+        }
+    }
+    return vec;
+}
+
+Vector3f Copter::sat_q_dot(Vector3f vec){
+    float sat_lim = 3;
+    for (int ii=0; ii<3; ii++){
+        if (vec[ii] > sat_lim){
+            vec[ii] = sat_lim;
+        }
+        if (vec[ii] < -sat_lim){
+            vec[ii] = -sat_lim;
+        }
+    }
+    return vec;
 }

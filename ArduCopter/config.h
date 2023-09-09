@@ -48,6 +48,80 @@
  # define MY_NEW_PARAMETER_DEFAULT      100.0     // default value for my new parameter
 #endif
 
+#ifndef TRO_QUAD_ATT_KR1_DEFAULT
+ # define TRO_QUAD_ATT_KR1_DEFAULT      3.5     
+#endif
+#ifndef TRO_QUAD_ATT_KR2_DEFAULT
+ # define TRO_QUAD_ATT_KR2_DEFAULT      3.5     
+#endif
+#ifndef TRO_QUAD_ATT_KR3_DEFAULT
+ # define TRO_QUAD_ATT_KR3_DEFAULT      4.5     
+#endif
+#ifndef TRO_QUAD_ATT_KOMEGA1_DEFAULT
+ # define TRO_QUAD_ATT_KOMEGA1_DEFAULT      25.0     
+#endif
+#ifndef TRO_QUAD_ATT_KOMEGA2_DEFAULT
+ # define TRO_QUAD_ATT_KOMEGA2_DEFAULT      30.0     
+#endif
+#ifndef TRO_QUAD_ATT_KOMEGA3_DEFAULT
+ # define TRO_QUAD_ATT_KOMEGA3_DEFAULT      14.5     
+#endif
+#ifndef TRO_QUAD_ATT_KI1_DEFAULT
+ # define TRO_QUAD_ATT_KI1_DEFAULT      0.0     
+#endif
+#ifndef TRO_QUAD_ATT_KI2_DEFAULT
+ # define TRO_QUAD_ATT_KI2_DEFAULT      0.0     
+#endif
+#ifndef TRO_QUAD_ATT_KI3_DEFAULT
+ # define TRO_QUAD_ATT_KI3_DEFAULT      0.0     
+#endif
+#ifndef TRO_QUAD_POS_KP_X_DEFAULT
+ # define TRO_QUAD_POS_KP_X_DEFAULT      3.5    
+#endif
+#ifndef TRO_QUAD_POS_KP_Y_DEFAULT
+ # define TRO_QUAD_POS_KP_Y_DEFAULT      4.0     
+#endif
+#ifndef TRO_QUAD_POS_KP_Z_DEFAULT
+ # define TRO_QUAD_POS_KP_Z_DEFAULT      15.0     
+#endif
+#ifndef TRO_QUAD_POS_KD_X_DEFAULT
+ # define TRO_QUAD_POS_KD_X_DEFAULT      0.8     
+#endif
+#ifndef TRO_QUAD_POS_KD_Y_DEFAULT
+ # define TRO_QUAD_POS_KD_Y_DEFAULT      3.0     
+#endif
+#ifndef TRO_QUAD_POS_KD_Z_DEFAULT
+ # define TRO_QUAD_POS_KD_Z_DEFAULT      4.0     
+#endif
+#ifndef TRO_QUAD_POS_KI_X_DEFAULT
+ # define TRO_QUAD_POS_KI_X_DEFAULT      0.0     
+#endif
+#ifndef TRO_QUAD_POS_KI_Y_DEFAULT
+ # define TRO_QUAD_POS_KI_Y_DEFAULT      0.0     
+#endif
+#ifndef TRO_QUAD_POS_KI_Z_DEFAULT
+ # define TRO_QUAD_POS_KI_Z_DEFAULT      0.05
+#endif
+#ifndef TRO_CABLE_KQ1_DEFAULT
+ # define TRO_CABLE_KQ1_DEFAULT      0.0     
+#endif
+#ifndef TRO_CABLE_KQ2_DEFAULT
+ # define TRO_CABLE_KQ2_DEFAULT      0.0     
+#endif
+#ifndef TRO_CABLE_KQ3_DEFAULT
+ # define TRO_CABLE_KQ3_DEFAULT      0.0     
+#endif
+#ifndef TRO_CABLE_KQ1_DOT_DEFAULT
+ # define TRO_CABLE_KQ1_DOT_DEFAULT      0.0     
+#endif
+#ifndef TRO_CABLE_KQ2_DOT_DEFAULT
+ # define TRO_CABLE_KQ2_DOT_DEFAULT      0.0     
+#endif
+#ifndef TRO_CABLE_KQ3_DOT_DEFAULT
+ # define TRO_CABLE_KQ3_DOT_DEFAULT      0.0     
+#endif
+
+
 //////////////////////////////////////////////////////////////////////////////
 // FRAME_CONFIG
 //

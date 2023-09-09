@@ -185,6 +185,7 @@
 
 #include "mode.h"
 
+
 class Copter : public AP_Vehicle {
 public:
     friend class GCS_MAVLINK_Copter;
@@ -984,7 +985,11 @@ private:
     Matrix3f eulerAnglesToRotationMatrix(Vector3f rpy);
     Vector3f Matrix_vector_mul(Matrix3f R, Vector3f v);
     Matrix3f hatmap(Vector3f v);
-    
+    void cable_states();
+    Vector3f sat_q(Vector3f vec);
+    Vector3f sat_q_dot(Vector3f vec);
+
+
 #if MODE_ACRO_ENABLED == ENABLED
 #if FRAME_CONFIG == HELI_FRAME
     ModeAcro_Heli mode_acro;
