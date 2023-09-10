@@ -666,6 +666,48 @@ struct PACKED log_att_trac {
     float psi_h_dot;
 };
 
+struct PACKED log_tro1_pos {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float pos_x;
+    float pos_y;
+    float pos_z;
+    float q1;
+    float q2;
+    float q3;
+    float att_roll;
+    float att_pitch;
+    float att_yaw;
+};
+
+struct PACKED log_tro1_vel {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float vel_x;
+    float vel_y;
+    float vel_z;
+    float q1_dot;
+    float q2_dot;
+    float q3_dot;
+    float roll_dot;
+    float pitch_dot;
+    float yaw_dot;
+};
+
+struct PACKED log_tro1_hum {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float h_x_dot;
+    float h_y_dot;
+    float h_z_dot;
+    float h_psi_dot;
+    float h_x_des;
+    float h_y_des;
+    float h_z_des;
+    float h_yaw_des;
+};
+
+
 struct PACKED log_sys_ID_ph {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -1362,6 +1404,12 @@ LOG_STRUCTURE_FROM_VISUALODOM \
       "VELO", "Qffffffff", "TimeUS,x_dot,y_dot,z_dot,ph_dot,th_dot,ps_dot,php_dot,thp_dot", "snnnkkkkk", "F--------", true }, \
     { LOG_ATT_TRA_MSG, sizeof(log_att_trac), \
       "LATT", "Qfffffff", "TimeUS,ph,th,psi,ph_h,th_h,ps_h,ps_h_dot", "sddddddk", "F-------", true }, \
+    { LOG_TRO1_POS_MSG, sizeof(log_tro1_pos), \
+      "TRP1", "Qfffffffff", "TimeUS,pos_x,pos_y,pos_z,q1,q2,q3,att_roll,att_pitch,att_yaw", "sddddddddk", "F---------", true }, \
+    { LOG_TRO1_VEL_MSG, sizeof(log_tro1_vel), \
+      "TRV1", "Qfffffffff", "TimeUS,vel_x,vel_y,vel_z,q1_dot,q2_dot,q3_dot,roll_dot,pitch_dot,yaw_dot", "sddddddddk", "F---------", true }, \
+    { LOG_TRO1_HUM_MSG, sizeof(log_tro1_hum), \
+      "TRH1", "Qffffffff", "TimeUS,h_x_dot,h_y_dot,h_z_dot,h_psi_dot,h_x_des,h_y_des,h_z_des,h_yaw_des", "sdddddddk", "F--------", true }, \
     { LOG_SID_PH_MSG, sizeof(log_sys_ID_ph), \
       "SIDP", "QHHHHHfff", "TimeUS,P1,P2,P3,P4,Pf,ph,th,ps", "s-----ddd", "F--------", true }, \
     { LOG_FILE_MSG, sizeof(log_File), \
@@ -1464,6 +1512,9 @@ enum LogMessages : uint8_t {
     LOG_VELO_MSG,
     LOG_ATT_TRA_MSG,
     LOG_SID_PH_MSG,
+    LOG_TRO1_POS_MSG,
+    LOG_TRO1_VEL_MSG,
+    LOG_TRO1_HUM_MSG,
     _LOG_LAST_MSG_
 };
 

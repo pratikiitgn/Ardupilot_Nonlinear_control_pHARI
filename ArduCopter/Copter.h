@@ -970,6 +970,9 @@ private:
     void Log_Write_position();
     void Log_Write_velocity();
     void log_attitude_tracking();
+    void log_TRO1_pos_();
+    void log_TRO1_vel_();
+    void log_TRO1_hum_();
     void getEncoderData();
     void gains_data_from_Rpi();
     void Portenta_data();

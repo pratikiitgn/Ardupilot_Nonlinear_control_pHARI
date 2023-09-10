@@ -52,14 +52,16 @@ void Copter::userhook_FastLoop()
     // log_attitude_tracking();
     // log_sys_ID_ph_func();
 
+    log_TRO1_pos_();
+    log_TRO1_vel_();
+    log_TRO1_hum_();
+
     // hal.console->printf("Pf %d PWM1 %d PWM2 %d PWM3 %d PWM4 %d Roll %f time %f \n",Pf,PWM1,PWM2,PWM3,PWM4,imu_roll,t_ph_sys_ID);
-    
-    
+
     imu_roll_log        =  (ahrs.roll_sensor)  / 100.0;     // degrees 
     imu_pitch_log       = -(ahrs.pitch_sensor) / 100.0;     // degrees 
     imu_yaw_log         = 360.0-(ahrs.yaw_sensor)   / 100.0;     // degrees 
     // hal.console->printf("IMU-> [%3.3f,%3.3f,%3.3f] | ",imu_roll_log,imu_pitch_log, imu_yaw_log);
-    
 
     // hal.console->printf("From usercode \n");
     getEncoderData();
@@ -213,6 +215,59 @@ void Copter::log_attitude_tracking()
         theta_h  : H_pitch,
         psi_h    : H_yaw,
         psi_h_dot: H_yaw_rate,
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::log_TRO1_pos_()
+{
+    struct log_tro1_pos pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_TRO1_POS_MSG),
+        time_us  : AP_HAL::micros64(),
+        pos_x       :quad_x,
+        pos_y       :quad_y,
+        pos_z       :quad_z,
+        q1          :qc[0],
+        q2          :qc[1],
+        q3          :qc[2],
+        att_roll    :imu_roll,
+        att_pitch   :imu_pitch,
+        att_yaw     :imu_yaw,
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::log_TRO1_vel_()
+{
+    struct log_tro1_vel pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_TRO1_VEL_MSG),
+        time_us  : AP_HAL::micros64(),
+        vel_x       :quad_x_dot,
+        vel_y       :quad_y_dot,
+        vel_z       :quad_z_dot,
+        q1_dot      :qc_dot[0],
+        q2_dot      :qc_dot[1],
+        q3_dot      :qc_dot[2],
+        roll_dot    :imu_roll_dot,
+        pitch_dot   :imu_pitch_dot,
+        yaw_dot     :imu_yaw_dot,
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::log_TRO1_hum_()
+{
+    struct log_tro1_hum pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_TRO1_HUM_MSG),
+        time_us  : AP_HAL::micros64(),
+        h_x_dot       :human_x_dot,
+        h_y_dot       :human_y_dot,
+        h_z_dot       :human_z_dot,
+        h_psi_dot     :human_yaw_dot,
+        h_x_des       :x_des,
+        h_y_des       :y_des,
+        h_z_des       :z_des,
+        h_yaw_des     :H_yaw,
     };
     logger.WriteBlock(&pkt, sizeof(pkt));
 }

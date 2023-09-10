@@ -48,3 +48,8 @@ extern float z_des;
 
 extern Vector3f qc;
 extern Vector3f qc_dot;
+
+extern float human_x_dot;
+extern float human_y_dot;
+extern float human_z_dot;
+extern float human_yaw_dot;
