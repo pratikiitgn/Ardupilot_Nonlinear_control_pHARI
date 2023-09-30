@@ -48,9 +48,18 @@ float imu_roll      = 0.0;      // degrees
 float imu_pitch     = 0.0;      // degrees 
 float imu_yaw       = 0.0;      // degrees 
 
+float imu_roll_prev     = 0.0;      // degrees 
+float imu_pitch_prev    = 0.0;      // degrees 
+float imu_yaw_prev      = 0.0;      // degrees 
+
 float imu_roll_dot  = 0.0;      // degrees/sec
 float imu_pitch_dot = 0.0;      // degrees/sec
 float imu_yaw_dot   = 0.0;      // degrees/sec
+
+float imu_roll_prev_dot     = 0.0;      // degrees 
+float imu_pitch_prev_dot    = 0.0;      // degrees 
+float imu_yaw_prev_dot      = 0.0;      // degrees 
+
 float battvolt      = 0.0;
 
 float quad_x = 0.0;
@@ -64,6 +73,10 @@ float quad_z_ini = 0.0;
 float quad_x_dot = 0.0;
 float quad_y_dot = 0.0;
 float quad_z_dot = 0.0;
+
+float quad_x_dot_prev = 0.0;
+float quad_y_dot_prev = 0.0;
+float quad_z_dot_prev = 0.0;
 
 float latitude  = 0.0;
 float longitude = 0.0;
@@ -81,24 +94,13 @@ float x_des_dot  = 0.0;
 float y_des_dot  = 0.0;
 float z_des_dot  = 0.0;
 
+float x_des_prev = 0.0;
+float y_des_prev = 0.0;
+float z_des_prev = 0.0;
+
 float yaw_initially = 0.0;
 
 int arm_disarm_flag = 0;
-
-float landing_timer = 0.0;
-int landing_timer_flag = 0;
-float landing_timer_start = 0.0;
-
-// global variables for pos controller
-int y_des_flag = 0;
-float timer_y_des = 0.0;
-int timer_y_des_flag = 0;
-float timer_y_des_start = 0.0;
-
-int x_des_flag          = 0;
-float timer_x_des       = 0.0;
-int timer_x_des_flag    = 0;
-float timer_x_des_start = 0.0;
 
 //quadcopter parameter
 float gravity = 9.81;
@@ -131,6 +133,61 @@ float human_y_dot = 0.0;
 float human_z_dot = 0.0;
 float human_yaw_dot = 0.0;
 
+Vector3f u_cable_log(0.0,0.0,0.0);
+Vector3f u_quad_log(0.0,0.0,0.0);
+Vector3f u_total_log(0.0,0.0,0.0);
+
+int PWM_1_log = 1000;
+int PWM_2_log = 1000;
+int PWM_3_log = 1000;
+int PWM_4_log = 1000;
+int PWM_5_log = 1000;
+int PWM_6_log = 1000;
+int PWM_7_log = 1000;
+int PWM_8_log = 1000;
+
+float f_final_log = 0.0;
+float M1_final_log = 0.0;
+float M2_final_log = 0.0;
+float M3_final_log = 0.0;
+
+// For Trajectory planning 
+Vector3f x1 (0.0,0.0,0.0);
+Vector3f x2 (0.0,0.0,2.0);
+Vector3f x3 (6.0,0.0,2.0);
+Vector3f x4 (6.0,-6.0,2.0);
+Vector3f x5 (3.0,-3.0,2.5);
+Vector3f x6 (0.0,0.0,2.0);
+Vector3f x7 (0.0,0.0,0.0);
+
+float max_speed = 1.25;
+
+float Traj_generation_start_time = 0.0;
+float Traj_generation_start_time_reset = 0.0;
+
+float t12 = 0.0;
+float t23 = 0.0;
+float t34 = 0.0;
+float t45 = 0.0;
+float t56 = 0.0;
+float t67 = 0.0;
+
+float t1 = 0.0;
+float t2 = 0.0;
+float t3 = 0.0;
+float t4 = 0.0;
+float t5 = 0.0;
+float t6 = 0.0;
+float t7 = 0.0;
+
+float PWM1_prev = 1000;
+float PWM2_prev = 1000;
+float PWM3_prev = 1000;
+float PWM4_prev = 1000;
+
+Vector3f qc_prev(0.0,0.0,-1.0);
+Vector3f qc_prev_dot(0.0,0.0,-1.0);
+
 void ModeStabilize::run()
 {
 
@@ -160,6 +217,11 @@ void ModeStabilize::run()
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////// Main logic starts here //////////////////////////
     ////////////////////////////////////////////////////////////////////////////
+
+        PWM_5_log = RC_Channels::get_radio_in(CH_5);
+        PWM_6_log = RC_Channels::get_radio_in(CH_6);
+        PWM_7_log = RC_Channels::get_radio_in(CH_7);
+        PWM_8_log = RC_Channels::get_radio_in(CH_8);
 
         if (RC_Channels::get_radio_in(CH_7) < 1200){
             // hal.console->printf("%3.3f,%3.3f,%3.3f,%3.3f\n", target_roll, target_pitch, target_yaw_rate,pilot_desired_throttle);
@@ -206,16 +268,27 @@ void ModeStabilize::run()
             ////////////////////////////////////
 
             if (copter.motors->armed()){
+                if (RC_Channels::get_radio_in(CH_7) > 1600 )
+                {
+                    Traj_generation_start_time = AP_HAL::millis()/1000.0 - Traj_generation_start_time_reset;
+                }else 
+                {
+                    Traj_generation_start_time_reset = AP_HAL::millis()/1000.0;
+                    Traj_generation_start_time = 0.0;
+                }
                 Non_linear_controller_single_quad();
+
             }else{
                 PWM1 = 1000;
                 PWM2 = 1000;
                 PWM3 = 1000;
                 PWM4 = 1000;
             }
+
             /////////////////////////////////////
             /// TRO 23 controller for single quad ends here
             ////////////////////////////////////
+
         }
     }
 }
@@ -229,8 +302,9 @@ void ModeStabilize::Non_linear_controller_single_quad(){
         human_x_dot = H_pitch;
         float dt_x = 1.0/5000.0;
         x_des       =  x_des + (-H_pitch) * dt_x;
-        if (x_des > 5.0){x_des = 5.0;}
-        if (x_des < -5.0){x_des = -5.0;}
+
+        if (x_des > 8.0){x_des = 8.0;}
+        if (x_des < -8.0){x_des = -8.0;}
         x_des_dot = 0.0;
 
         // Y direction desired position
@@ -240,22 +314,117 @@ void ModeStabilize::Non_linear_controller_single_quad(){
         human_y_dot = H_roll;
         float dt_y = 1.0/5000.0;
         y_des       =  y_des + (-H_roll) * dt_y;
-        if (y_des > 5.0){y_des = 5.0;}
-        if (y_des < -5.0){y_des = -5.0;}
+        if (y_des > 8.0){y_des = 8.0;}
+        if (y_des < -8.0){y_des = -8.0;}
         y_des_dot = 0.0;
 
-        // Position controller
+        // Z direction desired position
         if (H_throttle > -20.0 && H_throttle < 20.0){H_throttle = 0.0;}
         if (H_throttle < -20.0){H_throttle = H_throttle + 20.0;}
         if (H_throttle >  20.0){H_throttle = H_throttle - 20.0;}
         human_z_dot = H_throttle;
         float dt_z = 1.0/150000.0;
         z_des       =  z_des + H_throttle * dt_z;
-        if (z_des > 5.0){z_des = 5.0;}
-        if (z_des < -5.0){z_des = -5.0;}
+        if (z_des > 8.0){z_des = 8.0;}
+        if (z_des < -8.0){z_des = -8.0;}
         z_des_dot = 0.0;
 
+        x_des      = low_pass_filter_20_HZ(x_des,x_des_prev);
+        x_des_prev = x_des;
+
+        y_des      = low_pass_filter_20_HZ(y_des,y_des_prev);
+        y_des_prev = y_des;
+
+        z_des      = low_pass_filter_20_HZ(z_des,z_des_prev);
+        z_des_prev = z_des;
+
+        // hal.console->printf("%3.3f, %3.3f, %3.3f\n", x_des,y_des ,z_des);
+
+
+        // Desired yaw angle of the quadcopter
         human_yaw_dot = H_yaw;
+
+        //////// For auto trajectory generation
+        ////////////////
+
+        if (RC_Channels::get_radio_in(CH_7) > 1600 )
+        {
+
+            t12 = distance_(x1,x2)/max_speed ;
+            t12 = 5.0;
+            t23 = distance_(x2,x3)/max_speed ;
+            t34 = distance_(x3,x4)/max_speed ;
+            t45 = distance_(x4,x5)/max_speed ;
+            t56 = distance_(x5,x6)/max_speed ;
+            t67 = distance_(x6,x7)/max_speed ;
+            t67 = 5.0;
+
+            t1 = 0;
+            t2 = t1 + t12;
+            t3 = t1 + t12 + t23;
+            t4 = t1 + t12 + t23 + t34;
+            t5 = t1 + t12 + t23 + t34 + t45;
+            t6 = t1 + t12 + t23 + t34 + t45 + t56;
+            t7 = t1 + t12 + t23 + t34 + t45 + t56 + t67;
+
+            float t = Traj_generation_start_time;
+
+            if (t <= t2 && t >= t1)
+            {
+                x_des = Traj_generation(x1[0],x2[0],t1,t2,t);
+                y_des = Traj_generation(x1[1],x2[1],t1,t2,t);
+                z_des = Traj_generation(x1[2],x2[2],t1,t2,t);
+            }
+
+            if (t <= t3 && t >= t2)
+            {
+                x_des = Traj_generation(x2[0],x3[0],t2,t3,t);
+                y_des = Traj_generation(x2[1],x3[1],t2,t3,t);
+                z_des = Traj_generation(x2[2],x3[2],t2,t3,t);
+            }
+
+
+            if (t <= t4 && t >= t3)
+            {
+                x_des = Traj_generation(x3[0],x4[0],t3,t4,t);
+                y_des = Traj_generation(x3[1],x4[1],t3,t4,t);
+                z_des = Traj_generation(x3[2],x4[2],t3,t4,t);
+            }
+
+
+            if (t <= t5 && t >= t4)
+            {
+                x_des = Traj_generation(x4[0],x5[0],t4,t5,t);
+                y_des = Traj_generation(x4[1],x5[1],t4,t5,t);
+                z_des = Traj_generation(x4[2],x5[2],t4,t5,t);
+            }
+
+            if (t <= t6 && t >= t5)
+            {
+                x_des = Traj_generation(x5[0],x6[0],t5,t6,t);
+                y_des = Traj_generation(x5[1],x6[1],t5,t6,t);
+                z_des = Traj_generation(x5[2],x6[2],t5,t6,t);
+            }
+
+            if (t <= t7 && t >= t6)
+            {
+                x_des = Traj_generation(x6[0],x7[0],t6,t7,t);
+                y_des = Traj_generation(x6[1],x7[1],t6,t7,t);
+                z_des = Traj_generation(x6[2],x7[2],t6,t7,t);
+            }
+
+            if (t > t7)
+            {
+                x_des = 0.0;
+                y_des = 0.0;
+                z_des = 0.0;
+            }
+        }
+
+        // hal.console->printf("%3.3f, %3.3f, %3.3f, %3.3f\n", Traj_generation_start_time, x_des,y_des ,z_des);
+
+        //////// Controller design
+        ////////////////////////
 
         // error defination
         float e_x       = x_des - quad_x;
@@ -325,10 +494,12 @@ void ModeStabilize::Non_linear_controller_single_quad(){
         Vector3f e_xq_integral(kI_x * e_x_sum, kI_y * e_y_sum,kI_z * e_z_sum);
         Vector3f e3_with_gravity(0.0,0.0, mass_quad * gravity);
         Vector3f u_quad_pos(Matrix_vector_mul(K_xq,e_xq) + Matrix_vector_mul(K_xq_dot,e_xq_dot) + e3_with_gravity + e_xq_integral);
+
         if (u_quad_pos[2] < 8.0)
         {
             u_quad_pos[2] = 8.0;
         }
+
         // hal.console->printf("  |  u_q_pos->[%3.3f,%3.3f,%3.3f]\n", u_quad_pos[0],u_quad_pos[1],u_quad_pos[2]);
 
         //////////
@@ -358,6 +529,15 @@ void ModeStabilize::Non_linear_controller_single_quad(){
                 0.0,0.0,Kq3_dot
                 );
 
+        for (int ii=0; ii<3; ii++)
+        {
+            qc[ii]      = low_pass_filter_50_HZ(qc[ii],qc_prev[ii]);
+            qc_prev[ii] = qc[ii];
+
+            qc_dot[ii]  = low_pass_filter_50_HZ(qc_dot[ii],qc_prev_dot[ii]);
+            qc_prev_dot[ii] = qc_dot[ii];
+        }
+
         Vector3f eq(attitude_error_on_s2(qc,qc_des));
         Vector3f eq_dot(attitude_dot_error_on_s2(qc,qc_des, qc_dot, qc_des_dot));
 
@@ -370,10 +550,17 @@ void ModeStabilize::Non_linear_controller_single_quad(){
 
         u_final = u_quad_pos;
 
-        if (RC_Channels::get_radio_in(CH_7) > 1600 )
+        // To enable and disable CAC
+        if (RC_Channels::get_radio_in(CH_8) > 1600 )
         {
             u_final = u_quad_pos + u_cable;
         }
+
+        u_cable_log     = u_cable;
+        u_quad_log      = u_quad_pos;
+        u_total_log     = u_final;
+
+        u_final         = e3_with_gravity;
 
         // Vector3f u_final(u_quad_pos + u_cable);
 
@@ -489,7 +676,7 @@ void ModeStabilize::custom_geometric_controller_with_Rotation_matrix(Matrix3f Rd
             Mb2 =  Satuation_func_moments(-M[1]);
             Mb3 =  Satuation_func_moments(M[2]);
 
-            // hal.console->printf("F-> %3.3f | Mb-> [%3.3f,%3.3f,%3.3f] | ", F, Mb1,Mb2,Mb3);
+            // hal.console->printf("F-> %3.3f | Mb-> [%3.3f,%3.3f,%3.3f] | \n", F, Mb1,Mb2,Mb3);
 
             // hal.console->printf("M1->%f,M2->%f,M3->%f,F->%f\n",M[0],M[1],M[2],F);
 
@@ -513,6 +700,21 @@ void ModeStabilize::custom_geometric_controller_with_Rotation_matrix(Matrix3f Rd
             PWM2 = Inverse_thrust_function(function_F2);
             PWM3 = Inverse_thrust_function(function_F3);
             PWM4 = Inverse_thrust_function(function_F4);
+            
+            PWM1 = (int) low_pass_filter_100_HZ(PWM1,PWM1_prev);
+            PWM2 = (int) low_pass_filter_100_HZ(PWM2,PWM2_prev);
+            PWM3 = (int) low_pass_filter_100_HZ(PWM3,PWM3_prev);
+            PWM4 = (int) low_pass_filter_100_HZ(PWM4,PWM4_prev);
+
+            PWM1_prev = PWM1;
+            PWM2_prev = PWM2;
+            PWM3_prev = PWM3;
+            PWM4_prev = PWM4;
+
+            PWM_1_log = PWM1;
+            PWM_2_log = PWM2;
+            PWM_3_log = PWM3;
+            PWM_4_log = PWM4;
 
             // hal.console->printf("PWMs-> [%d,%d,%d,%d] \n", PWM1, PWM2, PWM3, PWM4);
 
@@ -525,6 +727,12 @@ void ModeStabilize::custom_geometric_controller_with_Rotation_matrix(Matrix3f Rd
             // PWM2 = 1000;
             // PWM3 = 1000;
             // PWM4 = 1000;
+
+            f_final_log = F;
+            M1_final_log = Mb1;
+            M2_final_log = Mb2;
+            M3_final_log = Mb3;
+            
 }
 
 
@@ -556,7 +764,7 @@ void ModeStabilize::quad_states(){
     quad_z =  (inertial_nav.get_position_z_up_cm() / 100.0) - quad_z_ini;
 
     // if (quad_z < 0){quad_z = 0;}
-    if (quad_z > 5.0){quad_z = 5.0;}
+    if (quad_z > 10.0){quad_z = 10.0;}
 
     // linear velocity in inertial frame of reference
     float quad_x_dot_inertial =  inertial_nav.get_velocity_xy_cms().x /100.0;
@@ -570,9 +778,43 @@ void ModeStabilize::quad_states(){
     imu_roll        =  (ahrs.roll_sensor)  / 100.0;     // degrees 
     imu_pitch       = -(ahrs.pitch_sensor) / 100.0;     // degrees 
     imu_yaw         = 360.0-(ahrs.yaw_sensor)   / 100.0;     // degrees 
+
     imu_roll_dot    =  (ahrs.get_gyro().x);             // degrees/second
     imu_pitch_dot   =  -(ahrs.get_gyro().y);             // degrees/second    
     imu_yaw_dot     = -(ahrs.get_gyro().z);             // degrees/second
+
+    // low pass filter in quadcopter's translational velocity
+
+    quad_x_dot      = low_pass_filter_50_HZ(quad_x_dot, quad_x_dot_prev);
+    quad_x_dot_prev = quad_x_dot;
+
+    quad_y_dot      = low_pass_filter_50_HZ(quad_y_dot, quad_y_dot_prev);
+    quad_y_dot_prev = quad_y_dot;
+
+    quad_z_dot      = low_pass_filter_50_HZ(quad_z_dot, quad_z_dot_prev);
+    quad_z_dot_prev = quad_z_dot;
+
+    // low pass filter in quadcopter's attitude
+
+    imu_roll        = low_pass_filter_50_HZ(imu_roll, imu_roll_prev);
+    imu_roll_prev   = imu_roll;
+
+    imu_pitch       = low_pass_filter_50_HZ(imu_pitch, imu_pitch_prev);
+    imu_pitch_prev  = imu_pitch;
+
+    imu_yaw         = low_pass_filter_50_HZ(imu_yaw, imu_yaw_prev);
+    imu_yaw_prev    = imu_yaw;
+
+    // low pass filter in quadcopter's angular velocity
+
+    imu_roll_dot        = low_pass_filter_50_HZ(imu_roll_dot, imu_roll_prev_dot);
+    imu_roll_prev_dot   = imu_roll_dot;
+
+    imu_pitch_dot       = low_pass_filter_50_HZ(imu_pitch_dot, imu_pitch_prev_dot);
+    imu_pitch_prev_dot  = imu_pitch_dot;
+
+    imu_yaw_dot         = low_pass_filter_50_HZ(imu_yaw_dot, imu_yaw_prev_dot);
+    imu_yaw_prev_dot    = imu_yaw_dot;
 
     // hal.console->printf("%3.3f,%3.3f\n", imu_yaw,imu_yaw_dot);
     // hal.console->printf("%3.3f,%3.3f,%3.3f\n", imu_roll,imu_pitch,imu_yaw);
@@ -930,4 +1172,54 @@ Vector3f ModeStabilize::attitude_dot_error_on_s2(Vector3f q, Vector3f qd,Vector3
     Vector3f eq_dot_ (eq_dot_1_, eq_dot_2_, eq_dot_3_);
 
     return eq_dot_;
+};
+
+float ModeStabilize::Traj_generation(float p1, float p2, float tt1, float tt2, float t)
+{
+
+    float denomenator       = (tt1 - tt2)*(tt1 - tt2)*(tt1 - tt2);
+    float first_coeffi      = -(-p2 * tt1 * tt1 * tt1 + 3 * p2 * tt1 * tt1 * tt2 - 3 * p1 * tt1 * tt2 * tt2 + p1 * tt2*tt2*tt2) / denomenator;
+    float second_coeffi     = (-6*tt1*tt2 * (p1 - p2)) / denomenator;
+    float third_coeffi      = (3*(tt1+tt2) * (p1 - p2)) / denomenator;
+    float forth_coeffi      = (-2*(p1 - p2))/denomenator;
+
+    float value = first_coeffi + t * second_coeffi + t*t * third_coeffi + t*t*t* forth_coeffi;
+    return value;
+};
+
+float ModeStabilize::distance_(Vector3f x, Vector3f y)
+{
+    Vector3f z(x - y);
+    float val = sqrtf(z[0]*z[0] + z[1]*z[1] + z[2]*z[2]);
+    return val;
+};
+
+float ModeStabilize::low_pass_filter_100_HZ(float PWM_now, float PWM_prev)
+{
+    float b1_100 = 0.43990085;
+    float b2_100 = 0.43990085;
+    float a1_100 = 0.12019831;
+
+    float filtered_data = a1_100 * PWM_prev + b1_100 * PWM_now + b2_100 * PWM_prev;
+    return filtered_data;
+};
+
+float ModeStabilize::low_pass_filter_50_HZ(float now, float prev)
+{
+    float b1_50 = 0.2819698;
+    float b2_50 = 0.2819698;
+    float a1_50 = 0.4360604;
+
+    float filtered_data = a1_50 * prev + b1_50 * now + b2_50 * prev;
+    return filtered_data;
+};
+
+float ModeStabilize::low_pass_filter_20_HZ(float now, float prev)
+{
+    float b1_20 = 0.13575525;
+    float b2_20 = 0.13575525;
+    float a1_20 = 0.7284895;
+
+    float filtered_data = a1_20 * prev + b1_20 * now + b2_20 * prev;
+    return filtered_data;
 };

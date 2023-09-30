@@ -55,6 +55,11 @@ void Copter::userhook_FastLoop()
     log_TRO1_pos_();
     log_TRO1_vel_();
     log_TRO1_hum_();
+    log_TRO1_uc_();
+    log_TRO1_uq_();
+    log_TRO1_ut_();
+    log_TRO1_PWM_();
+    log_TRO1_FM_();
 
     // hal.console->printf("Pf %d PWM1 %d PWM2 %d PWM3 %d PWM4 %d Roll %f time %f \n",Pf,PWM1,PWM2,PWM3,PWM4,imu_roll,t_ph_sys_ID);
 
@@ -272,22 +277,71 @@ void Copter::log_TRO1_hum_()
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
-// void Copter::log_sys_ID_ph_func()
-// {
-//     struct log_sys_ID_ph pkt = {
-//         LOG_PACKET_HEADER_INIT(LOG_SID_PH_MSG),
-//         time_us  : AP_HAL::micros64(),
-//         PWM1     : PWM1,
-//         PWM2     : PWM2,
-//         PWM3     : PWM3,
-//         PWM4     : PWM4,
-//         Pf       : Pf,
-//         phi      : imu_roll_log,
-//         theta    : imu_pitch_log,
-//         psi      : imu_yaw_log,
-//     };
-//     logger.WriteBlock(&pkt, sizeof(pkt));
-// }
+void Copter::log_TRO1_uc_()
+{
+    struct log_tro1_uc pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_TRO1_UC_MSG),
+        time_us  : AP_HAL::micros64(),
+        uc_1       :u_cable_log[0],
+        uc_2       :u_cable_log[1],
+        uc_3       :u_cable_log[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::log_TRO1_uq_()
+{
+    struct log_tro1_uq pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_TRO1_UQ_MSG),
+        time_us  : AP_HAL::micros64(),
+        uq_1       :u_quad_log[0],
+        uq_2       :u_quad_log[1],
+        uq_3       :u_quad_log[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::log_TRO1_ut_()
+{
+    struct log_tro1_ut pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_TRO1_UT_MSG),
+        time_us  : AP_HAL::micros64(),
+        ut_1       :u_total_log[0],
+        ut_2       :u_total_log[1],
+        ut_3       :u_total_log[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::log_TRO1_PWM_()
+{
+    struct log_tro1_pwm pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_TRO1_PWM_MSG),
+        time_us  : AP_HAL::micros64(),
+        pwm__1       : (float) PWM_1_log,
+        pwm__2       : (float) PWM_2_log,
+        pwm__3       : (float) PWM_3_log,
+        pwm__4       : (float) PWM_4_log,
+        pwm__5       : (float) PWM_5_log,
+        pwm__6       : (float) PWM_6_log,
+        pwm__7       : (float) PWM_7_log,
+        pwm__8       : (float) PWM_8_log,
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::log_TRO1_FM_()
+{
+    struct log_tro1_fm pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_TRO1_FM_MSG),
+        time_us  : AP_HAL::micros64(),
+        f_log    : f_final_log,
+        M1_log   : M1_final_log,
+        M2_log   : M2_final_log,
+        M3_log   : M3_final_log,
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
 
 Matrix3f Copter::eulerAnglesToRotationMatrix(Vector3f rpy){
      // Calculate rotation about x axis

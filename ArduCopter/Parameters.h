@@ -388,6 +388,7 @@ public:
         // 511: reserved
         k_param_my_new_parameter,       // 258
 
+        k_param_TRO_quad_max_vel,
         k_param_TRO_quad_att_KR1,
         k_param_TRO_quad_att_KR2,
         k_param_TRO_quad_att_KR3,
@@ -427,7 +428,7 @@ public:
     AP_Float        pilot_takeoff_alt;
     AP_Float        my_new_parameter;                  // my new parameter's description goes here
 
-
+    AP_Float        TRO_quad_max_vel;
     AP_Float        TRO_quad_att_KR1;
     AP_Float        TRO_quad_att_KR2;
     AP_Float        TRO_quad_att_KR3;

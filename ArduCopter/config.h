@@ -48,6 +48,10 @@
  # define MY_NEW_PARAMETER_DEFAULT      100.0     // default value for my new parameter
 #endif
 
+#ifndef TRO_QUAD_MAX_VEL_DEFAULT
+ # define TRO_QUAD_MAX_VEL_DEFAULT      1.0     // default value for my new parameter
+#endif
+
 #ifndef TRO_QUAD_ATT_KR1_DEFAULT
  # define TRO_QUAD_ATT_KR1_DEFAULT      3.5     
 #endif

@@ -973,6 +973,11 @@ private:
     void log_TRO1_pos_();
     void log_TRO1_vel_();
     void log_TRO1_hum_();
+    void log_TRO1_uc_();
+    void log_TRO1_uq_();
+    void log_TRO1_ut_();
+    void log_TRO1_PWM_();
+    void log_TRO1_FM_();
     void getEncoderData();
     void gains_data_from_Rpi();
     void Portenta_data();

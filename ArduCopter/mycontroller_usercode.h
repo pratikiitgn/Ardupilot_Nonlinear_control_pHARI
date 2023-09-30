@@ -53,3 +53,21 @@ extern float human_x_dot;
 extern float human_y_dot;
 extern float human_z_dot;
 extern float human_yaw_dot;
+
+extern Vector3f u_cable_log;
+extern Vector3f u_quad_log;
+extern Vector3f u_total_log;
+
+extern int PWM_1_log;
+extern int PWM_2_log;
+extern int PWM_3_log;
+extern int PWM_4_log;
+extern int PWM_5_log;
+extern int PWM_6_log;
+extern int PWM_7_log;
+extern int PWM_8_log;
+
+extern float f_final_log;
+extern float M1_final_log;
+extern float M2_final_log;
+extern float M3_final_log;

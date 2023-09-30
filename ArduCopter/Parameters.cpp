@@ -106,6 +106,7 @@ const AP_Param::Info Copter::var_info[] = {
     // @User: Advanced
     GSCALAR(my_new_parameter, "MY_NEW_PARAMETER", MY_NEW_PARAMETER_DEFAULT),
 
+    GSCALAR(TRO_quad_max_vel, "QUAD_MAX_VEL", TRO_QUAD_MAX_VEL_DEFAULT),
     GSCALAR(TRO_quad_att_KR1, "QUAD_ATT_KR1", TRO_QUAD_ATT_KR1_DEFAULT),
     GSCALAR(TRO_quad_att_KR2, "QUAD_ATT_KR2", TRO_QUAD_ATT_KR2_DEFAULT),
     GSCALAR(TRO_quad_att_KR3, "QUAD_ATT_KR3", TRO_QUAD_ATT_KR3_DEFAULT),

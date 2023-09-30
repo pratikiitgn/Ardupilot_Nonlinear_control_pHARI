@@ -1520,6 +1520,9 @@ public:
     float sat_I_gain_ph_th(float sum);
     float sat_I_gain_psi(float sum);
     int Inverse_thrust_function(float Force);
+    float low_pass_filter_100_HZ(float PWM_now, float PWM_prev);
+    float low_pass_filter_50_HZ(float PWM_now, float PWM_prev);
+    float low_pass_filter_20_HZ(float PWM_now, float PWM_prev);
     float saturation_for_yaw_angle_error(float error);
     void attitude_altitude_controller();
     void battery_check();
@@ -1556,6 +1559,10 @@ public:
     void ByDefault_Mode_stabiliz_code_motor_initializer();
     Vector3f attitude_error_on_s2(Vector3f q, Vector3f qd);
     Vector3f attitude_dot_error_on_s2(Vector3f q, Vector3f qd,Vector3f q_dot, Vector3f qd_dot);
+    float distance_(Vector3f x, Vector3f y);
+    float Traj_generation(float p1, float p2, float tt1, float tt2, float t);
+    float SQ_fil_roll_quad(float data1, float data2, float data3, float data4, float data5);
+
 
 protected:
 

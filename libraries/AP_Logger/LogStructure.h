@@ -707,6 +707,52 @@ struct PACKED log_tro1_hum {
     float h_yaw_des;
 };
 
+struct PACKED log_tro1_uc {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float uc_1;
+    float uc_2;
+    float uc_3;
+};
+
+struct PACKED log_tro1_uq {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float uq_1;
+    float uq_2;
+    float uq_3;
+};
+
+struct PACKED log_tro1_ut {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float ut_1;
+    float ut_2;
+    float ut_3;
+};
+
+struct PACKED log_tro1_pwm {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float pwm__1;
+    float pwm__2;
+    float pwm__3;
+    float pwm__4;
+    float pwm__5;
+    float pwm__6;
+    float pwm__7;
+    float pwm__8;
+};
+
+struct PACKED log_tro1_fm {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float f_log;
+    float M1_log;
+    float M2_log;
+    float M3_log;
+};
+
 
 struct PACKED log_sys_ID_ph {
     LOG_PACKET_HEADER;
@@ -1410,11 +1456,21 @@ LOG_STRUCTURE_FROM_VISUALODOM \
       "TRV1", "Qfffffffff", "TimeUS,vel_x,vel_y,vel_z,q1_dot,q2_dot,q3_dot,roll_dot,pitch_dot,yaw_dot", "sddddddddk", "F---------", true }, \
     { LOG_TRO1_HUM_MSG, sizeof(log_tro1_hum), \
       "TRH1", "Qffffffff", "TimeUS,h_x_dot,h_y_dot,h_z_dot,h_psi_dot,h_x_des,h_y_des,h_z_des,h_yaw_des", "sdddddddk", "F--------", true }, \
+    { LOG_TRO1_UC_MSG, sizeof(log_tro1_uc), \
+      "TRUC", "Qfff", "TimeUS, uc_1, uc_2, uc_3", "sddd", "F---", true }, \
+    { LOG_TRO1_UQ_MSG, sizeof(log_tro1_uq), \
+      "TRUQ", "Qfff", "TimeUS, uq_1, uq_2, uq_3", "sddd", "F---", true }, \
+    { LOG_TRO1_UT_MSG, sizeof(log_tro1_ut), \
+      "TRUT", "Qfff", "TimeUS, ut_1, ut_2, ut_3", "sddd", "F---", true }, \
+    { LOG_TRO1_PWM_MSG, sizeof(log_tro1_pwm), \
+      "TRPW", "Qffffffff", "TimeUS, pwm__1, pwm__2, pwm__3, pwm__4, pwm__5, pwm__6, pwm__7, pwm__8", "sdddddddd", "F--------", true }, \
+    { LOG_TRO1_FM_MSG, sizeof(log_tro1_fm), \
+      "TRFM", "Qffff", "TimeUS,f_log,M1_log,M2_log,M3_log", "sdddd", "F----", true }, \
     { LOG_SID_PH_MSG, sizeof(log_sys_ID_ph), \
       "SIDP", "QHHHHHfff", "TimeUS,P1,P2,P3,P4,Pf,ph,th,ps", "s-----ddd", "F--------", true }, \
     { LOG_FILE_MSG, sizeof(log_File), \
       "FILE",   "NIBZ",       "FileName,Offset,Length,Data", "----", "----" }, \
-LOG_STRUCTURE_FROM_AIS \
+      LOG_STRUCTURE_FROM_AIS \
     { LOG_SCRIPTING_MSG, sizeof(log_Scripting), \
       "SCR",   "QNIii", "TimeUS,Name,Runtime,Total_mem,Run_mem", "s#sbb", "F-F--", true }, \
     { LOG_VER_MSG, sizeof(log_VER), \
@@ -1515,6 +1571,11 @@ enum LogMessages : uint8_t {
     LOG_TRO1_POS_MSG,
     LOG_TRO1_VEL_MSG,
     LOG_TRO1_HUM_MSG,
+    LOG_TRO1_UC_MSG,
+    LOG_TRO1_UQ_MSG,
+    LOG_TRO1_UT_MSG,
+    LOG_TRO1_PWM_MSG,
+    LOG_TRO1_FM_MSG,
     _LOG_LAST_MSG_
 };
 
