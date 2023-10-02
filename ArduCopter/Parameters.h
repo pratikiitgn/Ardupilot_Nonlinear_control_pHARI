@@ -388,7 +388,6 @@ public:
         // 511: reserved
         k_param_my_new_parameter,       // 258
 
-        k_param_TRO_quad_max_vel,
         k_param_TRO_quad_att_KR1,
         k_param_TRO_quad_att_KR2,
         k_param_TRO_quad_att_KR3,
@@ -413,6 +412,8 @@ public:
         k_param_TRO_cable_Kq1_dot,
         k_param_TRO_cable_Kq2_dot,
         k_param_TRO_cable_Kq3_dot,
+        k_param_TRO_quad_max_vel,
+
     };
 
     AP_Int16        format_version;
@@ -428,7 +429,6 @@ public:
     AP_Float        pilot_takeoff_alt;
     AP_Float        my_new_parameter;                  // my new parameter's description goes here
 
-    AP_Float        TRO_quad_max_vel;
     AP_Float        TRO_quad_att_KR1;
     AP_Float        TRO_quad_att_KR2;
     AP_Float        TRO_quad_att_KR3;
@@ -453,6 +453,9 @@ public:
     AP_Float        TRO_cable_Kq1_dot;
     AP_Float        TRO_cable_Kq2_dot;
     AP_Float        TRO_cable_Kq3_dot;
+
+    AP_Float        TRO_quad_max_vel;
+
 
 #if MODE_RTL_ENABLED == ENABLED
     AP_Int32        rtl_altitude;

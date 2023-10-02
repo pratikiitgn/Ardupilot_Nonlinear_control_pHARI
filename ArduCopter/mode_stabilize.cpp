@@ -153,11 +153,11 @@ float M3_final_log = 0.0;
 
 // For Trajectory planning 
 Vector3f x1 (0.0,0.0,0.0);
-Vector3f x2 (0.0,0.0,2.0);
-Vector3f x3 (6.0,0.0,2.0);
-Vector3f x4 (6.0,-6.0,2.0);
-Vector3f x5 (3.0,-3.0,2.5);
-Vector3f x6 (0.0,0.0,2.0);
+Vector3f x2 (0.0,0.0,3.0);
+Vector3f x3 (6.0,0.0,3.0);
+Vector3f x4 (0.0,0.0,3.0);
+Vector3f x5 (6.0,0.0,3.0);
+Vector3f x6 (0.0,0.0,3.0);
 Vector3f x7 (0.0,0.0,0.0);
 
 float max_speed = 1.25;
@@ -335,7 +335,7 @@ void ModeStabilize::Non_linear_controller_single_quad(){
         y_des      = low_pass_filter_20_HZ(y_des,y_des_prev);
         y_des_prev = y_des;
 
-        z_des      = low_pass_filter_20_HZ(z_des,z_des_prev);
+        z_des      = low_pass_filter_100_HZ(z_des,z_des_prev);
         z_des_prev = z_des;
 
         // hal.console->printf("%3.3f, %3.3f, %3.3f\n", x_des,y_des ,z_des);
@@ -560,7 +560,7 @@ void ModeStabilize::Non_linear_controller_single_quad(){
         u_quad_log      = u_quad_pos;
         u_total_log     = u_final;
 
-        u_final         = e3_with_gravity;
+        // u_final         = e3_with_gravity;
 
         // Vector3f u_final(u_quad_pos + u_cable);
 
@@ -581,9 +581,9 @@ void ModeStabilize::Non_linear_controller_single_quad(){
 
         // if (RC_Channels::get_radio_in(CH_7) > 1600 )
         // {
-        //     Vector3f rpy_human((H_roll*PI/180.0)/2.0,(-H_pitch*PI/180.0)/2.0,H_yaw*PI/180.0);
+            // Vector3f rpy_human((H_roll*PI/180.0)/2.0,(-H_pitch*PI/180.0)/2.0,H_yaw*PI/180.0);
         //     // hal.console->printf("Hpitch-> %3.3f | ",-H_pitch);
-        //     R_d = eulerAnglesToRotationMatrix(rpy_human);
+            // R_d = eulerAnglesToRotationMatrix(rpy_human);
         // }
 
         Vector3f Omegad_quadcopter(0.0,0.0,0.0);

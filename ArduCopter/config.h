@@ -48,27 +48,23 @@
  # define MY_NEW_PARAMETER_DEFAULT      100.0     // default value for my new parameter
 #endif
 
-#ifndef TRO_QUAD_MAX_VEL_DEFAULT
- # define TRO_QUAD_MAX_VEL_DEFAULT      1.0     // default value for my new parameter
-#endif
-
 #ifndef TRO_QUAD_ATT_KR1_DEFAULT
  # define TRO_QUAD_ATT_KR1_DEFAULT      3.5     
 #endif
 #ifndef TRO_QUAD_ATT_KR2_DEFAULT
- # define TRO_QUAD_ATT_KR2_DEFAULT      3.5     
+ # define TRO_QUAD_ATT_KR2_DEFAULT      3.5
 #endif
 #ifndef TRO_QUAD_ATT_KR3_DEFAULT
- # define TRO_QUAD_ATT_KR3_DEFAULT      4.5     
+ # define TRO_QUAD_ATT_KR3_DEFAULT      1.5
 #endif
 #ifndef TRO_QUAD_ATT_KOMEGA1_DEFAULT
- # define TRO_QUAD_ATT_KOMEGA1_DEFAULT      25.0     
+ # define TRO_QUAD_ATT_KOMEGA1_DEFAULT      35.0     
 #endif
 #ifndef TRO_QUAD_ATT_KOMEGA2_DEFAULT
- # define TRO_QUAD_ATT_KOMEGA2_DEFAULT      30.0     
+ # define TRO_QUAD_ATT_KOMEGA2_DEFAULT      35.0     
 #endif
 #ifndef TRO_QUAD_ATT_KOMEGA3_DEFAULT
- # define TRO_QUAD_ATT_KOMEGA3_DEFAULT      14.5     
+ # define TRO_QUAD_ATT_KOMEGA3_DEFAULT      5.0   
 #endif
 #ifndef TRO_QUAD_ATT_KI1_DEFAULT
  # define TRO_QUAD_ATT_KI1_DEFAULT      0.0     
@@ -107,24 +103,27 @@
  # define TRO_QUAD_POS_KI_Z_DEFAULT      0.05
 #endif
 #ifndef TRO_CABLE_KQ1_DEFAULT
- # define TRO_CABLE_KQ1_DEFAULT      0.0     
+ # define TRO_CABLE_KQ1_DEFAULT      -2.5     
 #endif
 #ifndef TRO_CABLE_KQ2_DEFAULT
- # define TRO_CABLE_KQ2_DEFAULT      0.0     
+ # define TRO_CABLE_KQ2_DEFAULT      -2.5     
 #endif
 #ifndef TRO_CABLE_KQ3_DEFAULT
  # define TRO_CABLE_KQ3_DEFAULT      0.0     
 #endif
 #ifndef TRO_CABLE_KQ1_DOT_DEFAULT
- # define TRO_CABLE_KQ1_DOT_DEFAULT      0.0     
+ # define TRO_CABLE_KQ1_DOT_DEFAULT      -1.0    
 #endif
 #ifndef TRO_CABLE_KQ2_DOT_DEFAULT
- # define TRO_CABLE_KQ2_DOT_DEFAULT      0.0     
+ # define TRO_CABLE_KQ2_DOT_DEFAULT      -1.0    
 #endif
 #ifndef TRO_CABLE_KQ3_DOT_DEFAULT
  # define TRO_CABLE_KQ3_DOT_DEFAULT      0.0     
 #endif
 
+#ifndef TRO_QUAD_MAX_VEL_DEFAULT
+ # define TRO_QUAD_MAX_VEL_DEFAULT      1.0     // default value for my new parameter
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // FRAME_CONFIG
