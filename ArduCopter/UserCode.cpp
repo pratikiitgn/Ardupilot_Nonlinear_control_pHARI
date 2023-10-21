@@ -442,9 +442,11 @@ void Copter::getEncoderData()
 
         encoder_roll_feedback  = -(float)((encoder_roll_int  - 50000.0) / 100.0);
         encoder_pitch_feedback = -(float)((encoder_pitch_int - 50000.0) / 100.0);
-        encoder_pitch_feedback = encoder_pitch_feedback - 8.5;
-        // hal.console->printf("%3.3f,", encoder_roll_feedback);
-        // hal.console->printf("%3.3f\n", encoder_pitch_feedback);
+
+        encoder_pitch_feedback = encoder_pitch_feedback - 8.5 - 95.0;
+
+        hal.console->printf("%3.3f,", encoder_roll_feedback);
+        hal.console->printf("%3.3f\n", encoder_pitch_feedback);
 
         if (encoder_roll_feedback > 60.0){
             encoder_roll_feedback = 60.0;

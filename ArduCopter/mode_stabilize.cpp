@@ -153,14 +153,14 @@ float M3_final_log = 0.0;
 
 // For Trajectory planning 
 Vector3f x1 (0.0,0.0,0.0);
-Vector3f x2 (0.0,0.0,3.0);
-Vector3f x3 (6.0,0.0,3.0);
-Vector3f x4 (0.0,0.0,3.0);
-Vector3f x5 (6.0,0.0,3.0);
-Vector3f x6 (0.0,0.0,3.0);
+Vector3f x2 (0.0,0.0,3.5);
+Vector3f x3 (6.0,0.0,3.5);
+Vector3f x4 (6.0,-6.0,3.5);
+Vector3f x5 (0.0,-6.0,3.5);
+Vector3f x6 (0.0,0.0,3.5);
 Vector3f x7 (0.0,0.0,0.0);
 
-float max_speed = 1.25;
+float max_speed = 1.0;
 
 float Traj_generation_start_time = 0.0;
 float Traj_generation_start_time_reset = 0.0;
@@ -329,14 +329,14 @@ void ModeStabilize::Non_linear_controller_single_quad(){
         if (z_des < -8.0){z_des = -8.0;}
         z_des_dot = 0.0;
 
-        x_des      = low_pass_filter_20_HZ(x_des,x_des_prev);
-        x_des_prev = x_des;
+        // x_des      = low_pass_filter_20_HZ(x_des,x_des_prev);
+        // x_des_prev = x_des;
 
-        y_des      = low_pass_filter_20_HZ(y_des,y_des_prev);
-        y_des_prev = y_des;
+        // y_des      = low_pass_filter_20_HZ(y_des,y_des_prev);
+        // y_des_prev = y_des;
 
-        z_des      = low_pass_filter_100_HZ(z_des,z_des_prev);
-        z_des_prev = z_des;
+        // z_des      = low_pass_filter_100_HZ(z_des,z_des_prev);
+        // z_des_prev = z_des;
 
         // hal.console->printf("%3.3f, %3.3f, %3.3f\n", x_des,y_des ,z_des);
 
@@ -351,13 +351,13 @@ void ModeStabilize::Non_linear_controller_single_quad(){
         {
 
             t12 = distance_(x1,x2)/max_speed ;
-            t12 = 5.0;
+            t12 = 10.0;
             t23 = distance_(x2,x3)/max_speed ;
             t34 = distance_(x3,x4)/max_speed ;
             t45 = distance_(x4,x5)/max_speed ;
             t56 = distance_(x5,x6)/max_speed ;
             t67 = distance_(x6,x7)/max_speed ;
-            t67 = 5.0;
+            t67 = 10.0;
 
             t1 = 0;
             t2 = t1 + t12;
@@ -764,7 +764,7 @@ void ModeStabilize::quad_states(){
     quad_z =  (inertial_nav.get_position_z_up_cm() / 100.0) - quad_z_ini;
 
     // if (quad_z < 0){quad_z = 0;}
-    if (quad_z > 10.0){quad_z = 10.0;}
+    // if (quad_z > 10.0){quad_z = 10.0;}
 
     // linear velocity in inertial frame of reference
     float quad_x_dot_inertial =  inertial_nav.get_velocity_xy_cms().x /100.0;
@@ -785,14 +785,14 @@ void ModeStabilize::quad_states(){
 
     // low pass filter in quadcopter's translational velocity
 
-    quad_x_dot      = low_pass_filter_50_HZ(quad_x_dot, quad_x_dot_prev);
-    quad_x_dot_prev = quad_x_dot;
+    // quad_x_dot      = low_pass_filter_50_HZ(quad_x_dot, quad_x_dot_prev);
+    // quad_x_dot_prev = quad_x_dot;
 
-    quad_y_dot      = low_pass_filter_50_HZ(quad_y_dot, quad_y_dot_prev);
-    quad_y_dot_prev = quad_y_dot;
+    // quad_y_dot      = low_pass_filter_50_HZ(quad_y_dot, quad_y_dot_prev);
+    // quad_y_dot_prev = quad_y_dot;
 
-    quad_z_dot      = low_pass_filter_50_HZ(quad_z_dot, quad_z_dot_prev);
-    quad_z_dot_prev = quad_z_dot;
+    // quad_z_dot      = low_pass_filter_50_HZ(quad_z_dot, quad_z_dot_prev);
+    // quad_z_dot_prev = quad_z_dot;
 
     // low pass filter in quadcopter's attitude
 
