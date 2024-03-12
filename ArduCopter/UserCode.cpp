@@ -12,10 +12,11 @@ float PAMD_pitch    = 0.0;
 float PAMD_yaw      = 0.0;
 
 char cable_attitude[]       = "50000_50000";
-char payload_attitude[]       = "500000_500000&500000";
+char payload_attitude[]     = "500000_500000&500000";
+char Quad1POS_CAM1_PAC[]    = "5000_5000_5000_5000_5000_5000_5000_5000_5000";
 
-char CAM_roll_char[]            = "50000";
-char CAM_pitch_char[]           = "50000";
+char CAM_roll_char[]        = "50000";
+char CAM_pitch_char[]       = "50000";
 
 char PAMD_roll_char[]       = "500000";
 char PAMD_pitch_char[]      = "500000";
@@ -25,19 +26,55 @@ float quad_roll             = 0.0;
 float quad_pitch            = 0.0;
 float quad_yaw              = 0.0;
 
+float u1_POS_1          = 0.0;
+float u1_POS_2          = 0.0;
+float u1_POS_3          = 0.0;
+
+float u1_CAC_1          = 0.0;
+float u1_CAC_2          = 0.0;
+float u1_CAC_3          = 0.0;
+
+float u1_PAC_1          = 0.0;
+float u1_PAC_2          = 0.0;
+float u1_PAC_3          = 0.0;
+
+char u1_POS_1_char[]    = "5000";
+char u1_POS_2_char[]    = "5000";
+char u1_POS_3_char[]    = "5000";
+
+char u1_CAC_1_char[]    = "5000";
+char u1_CAC_2_char[]    = "5000";
+char u1_CAC_3_char[]    = "5000";
+
+char u1_PAC_1_char[]    = "5000";
+char u1_PAC_2_char[]    = "5000";
+char u1_PAC_3_char[]    = "5000";
+
+int u1_POS_1_int     = 0.0;
+int u1_POS_2_int     = 0.0;
+int u1_POS_3_int     = 0.0;
+
+int u1_CAC_1_int     = 0.0;
+int u1_CAC_2_int     = 0.0;
+int u1_CAC_3_int     = 0.0;
+
+int u1_PAC_1_int     = 0.0;
+int u1_PAC_2_int     = 0.0;
+int u1_PAC_3_int     = 0.0;
+
 Vector3f qc_2(0.0,0.0,-1.0);
 Vector3f qp(1.0,0.0,0.0);
 
-int CAM_device_port     = 4;
+int QuadCam1qpd_port    = 1;
 int PAMD_device_port    = 2;
+int CAM_device_port     = 4;
 
 //           parameter prefix 
-// UART4  -  SERIAL3_           - GPS      - GPS1       
-// UART8 -   SERIAL4_           - SERIAL4  - GPS2       
+// UART4  -  SERIAL3_           - GPS      - GPS1
+// UART8  -  SERIAL4_           - SERIAL4  - GPS2
 
-// USART2 -  SERIAL1_             TELEM1     TELEM1     
-// USART3 -  SERIAL2_             TELEM2     TELEM2     
-
+// USART2 -  SERIAL1_             TELEM1     TELEM1
+// USART3 -  SERIAL2_             TELEM2     TELEM2
 
 #ifdef USERHOOK_INIT
 void Copter::userhook_init()
@@ -45,8 +82,9 @@ void Copter::userhook_init()
     // put your initialisation code here
     // this will be called once at start-up
 
-    hal.serial(PAMD_device_port)->begin(230400);        // telemetry 2 port Pixhawk Cube Orange - PAMD device
-    hal.serial(CAM_device_port)->begin(230400);         // GPS 2       port Pixhawk Cube Orange - CAM  device
+    hal.serial(QuadCam1qpd_port)->begin(230400);        // telemetry 1  port Pixhawk Cube Orange - 
+    hal.serial(PAMD_device_port)->begin(230400);        // telemetry 2  port Pixhawk Cube Orange - PAMD device
+    hal.serial(CAM_device_port)->begin(230400);         // GPS 2        port Pixhawk Cube Orange - CAM  device
 }
 #endif
 
@@ -63,6 +101,7 @@ void Copter::userhook_FastLoop()
 
     get_CAM_device_Data();
     get_PAMD_device_Data();
+    get_Quad1_CAM1_qpd_Data();
     // hal.console->printf("Hi Pratik from Ardupilot \n");
 
 }
@@ -198,9 +237,113 @@ void Copter::get_PAMD_device_Data()
         Vector3f e_3(0,0,1.0);
         qp = Matrix_vector_mul(R_payload,e_3);
 
-        hal.console->printf("%3.3f,",  qp[0]);
-        hal.console->printf("%3.3f,",  qp[1]);
-        hal.console->printf("%3.3f\n", qp[2]);
+        // hal.console->printf("%3.3f,",  qp[0]);
+        // hal.console->printf("%3.3f,",  qp[1]);
+        // hal.console->printf("%3.3f\n", qp[2]);
+
+}
+
+float Copter::limit_on_forces_from_quad1(float u)
+{
+    float limited_data = 0.0;
+
+    if (u < 0.0){ limited_data = 0.0;}
+    if (u > 15.0){ limited_data = 15.0;}
+
+    return limited_data;
+}
+
+void Copter::get_Quad1_CAM1_qpd_Data()
+{
+    bool receiving_data = false;
+    int index           = 0;
+    char startChar      = ',';
+    char endChar        = '/';
+    bool new_data       = false;
+
+    while (hal.serial(QuadCam1qpd_port)->available()>0 && new_data == false)
+        {
+            char temp = hal.serial(QuadCam1qpd_port)->read();
+
+            if (receiving_data == true)
+            {
+                if (temp != endChar)
+                {
+                    Quad1POS_CAM1_PAC[index] = temp;
+                    index++;
+                }
+                else
+                {
+                    Quad1POS_CAM1_PAC[index] = '\0';
+                    receiving_data = false;
+                    new_data = false;
+                    index = 0;
+                }
+            }
+            else if (temp == startChar)
+            {
+                receiving_data = true;
+                index = 0; 
+            }
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            u1_POS_1_char[i]    = Quad1POS_CAM1_PAC[i];
+            u1_POS_2_char[i]    = Quad1POS_CAM1_PAC[i+5];
+            u1_POS_3_char[i]    = Quad1POS_CAM1_PAC[i+10];
+
+            u1_CAC_1_char[i]    = Quad1POS_CAM1_PAC[i+15];
+            u1_CAC_2_char[i]    = Quad1POS_CAM1_PAC[i+20];
+            u1_CAC_3_char[i]    = Quad1POS_CAM1_PAC[i+25];
+
+            u1_PAC_1_char[i]    = Quad1POS_CAM1_PAC[i+30];
+            u1_PAC_2_char[i]    = Quad1POS_CAM1_PAC[i+35];
+            u1_PAC_3_char[i]    = Quad1POS_CAM1_PAC[i+40];
+        }
+
+        u1_POS_1_int    = atoi(u1_POS_1_char);
+        u1_POS_2_int    = atoi(u1_POS_2_char);
+        u1_POS_3_int    = atoi(u1_POS_3_char);
+
+        u1_CAC_1_int    = atoi(u1_CAC_1_char);
+        u1_CAC_2_int    = atoi(u1_CAC_2_char);
+        u1_CAC_3_int    = atoi(u1_CAC_3_char);
+
+        u1_PAC_1_int    = atoi(u1_PAC_1_char);
+        u1_PAC_2_int    = atoi(u1_PAC_2_char);
+        u1_PAC_3_int    = atoi(u1_PAC_3_char);
+
+        u1_POS_1          = (float)((u1_POS_1_int - 5000.0) / 100.0);
+        u1_POS_2          = (float)((u1_POS_2_int - 5000.0) / 100.0);
+        u1_POS_3          = (float)((u1_POS_3_int - 5000.0) / 100.0);
+
+        u1_CAC_1          = (float)((u1_CAC_1_int - 5000.0) / 100.0);
+        u1_CAC_2          = (float)((u1_CAC_2_int - 5000.0) / 100.0);
+        u1_CAC_3          = (float)((u1_CAC_3_int - 5000.0) / 100.0);
+
+        u1_PAC_1          = (float)((u1_PAC_1_int - 5000.0) / 100.0);
+        u1_PAC_2          = (float)((u1_PAC_2_int - 5000.0) / 100.0);
+        u1_PAC_3          = (float)((u1_PAC_3_int - 5000.0) / 100.0);
+
+        u1_POS_1 = limit_on_forces_from_quad1(u1_POS_1);
+        u1_POS_2 = limit_on_forces_from_quad1(u1_POS_2);
+        u1_POS_3 = limit_on_forces_from_quad1(u1_POS_3);
+
+        u1_CAC_1 = limit_on_forces_from_quad1(u1_CAC_1);
+        u1_CAC_2 = limit_on_forces_from_quad1(u1_CAC_2);
+        u1_CAC_3 = limit_on_forces_from_quad1(u1_CAC_3);
+
+        u1_PAC_1 = limit_on_forces_from_quad1(u1_PAC_1);
+        u1_PAC_2 = limit_on_forces_from_quad1(u1_PAC_2);
+        u1_PAC_3 = limit_on_forces_from_quad1(u1_PAC_3);
+
+        hal.console->printf("%3.2f, %3.2f, %3.2f | ", u1_POS_1, u1_POS_2, u1_POS_3);
+
+        hal.console->printf("%3.2f, %3.2f, %3.2f | ", u1_CAC_1, u1_CAC_2, u1_CAC_3);
+
+        hal.console->printf("%3.2f, %3.2f, %3.2f \n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
+
 
 }
 
@@ -311,6 +454,7 @@ void Copter::get_CAM_device_Data()
         qc_2 = sat_q(qc_2);
 
 }
+
 
 Vector3f Copter::Matrix_vector_mul(Matrix3f R, Vector3f v){
     Vector3f mul_vector(

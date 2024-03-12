@@ -974,6 +974,8 @@ private:
     void Log_Write_position();
     void Log_Write_velocity();
     void log_attitude_tracking();
+    void get_Quad1_CAM1_qpd_Data();
+    float limit_on_forces_from_quad1(float u);
     void log_TRO1_pos_();
     void log_TRO1_vel_();
     void log_TRO1_hum_();
