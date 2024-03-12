@@ -101,7 +101,7 @@ void Copter::userhook_FastLoop()
 
     get_CAM_device_Data();
     get_PAMD_device_Data();
-    get_Quad1_CAM1_qpd_Data();
+    // get_Quad1_CAM1_qpd_Data();
     // hal.console->printf("Hi Pratik from Ardupilot \n");
 
 }
@@ -118,6 +118,8 @@ void Copter::userhook_50Hz()
 void Copter::userhook_MediumLoop()
 {
     // put your 10Hz code here
+        get_Quad1_CAM1_qpd_Data();
+
 }
 #endif
 
@@ -261,9 +263,13 @@ void Copter::get_Quad1_CAM1_qpd_Data()
     char endChar        = '/';
     bool new_data       = false;
 
+    // char temp1 = hal.serial(QuadCam1qpd_port)->read();
+    // hal.console->printf("%c\n", temp1);
+
     while (hal.serial(QuadCam1qpd_port)->available()>0 && new_data == false)
         {
             char temp = hal.serial(QuadCam1qpd_port)->read();
+            // hal.console->printf("%c\n", temp);
 
             if (receiving_data == true)
             {
@@ -287,6 +293,8 @@ void Copter::get_Quad1_CAM1_qpd_Data()
             }
         }
 
+        hal.console->printf("%s\n\n", Quad1POS_CAM1_PAC);
+
         for (int i = 0; i < 4; i++)
         {
             u1_POS_1_char[i]    = Quad1POS_CAM1_PAC[i];
@@ -302,6 +310,10 @@ void Copter::get_Quad1_CAM1_qpd_Data()
             u1_PAC_3_char[i]    = Quad1POS_CAM1_PAC[i+40];
         }
 
+        hal.console->printf("%s,%s,%s",   u1_POS_1_char, u1_POS_2_char, u1_POS_3_char);
+        hal.console->printf("%s,%s,%s",   u1_CAC_1_char, u1_CAC_2_char, u1_CAC_3_char);
+        hal.console->printf("%s,%s,%s\n", u1_PAC_1_char, u1_PAC_2_char, u1_PAC_3_char);
+
         u1_POS_1_int    = atoi(u1_POS_1_char);
         u1_POS_2_int    = atoi(u1_POS_2_char);
         u1_POS_3_int    = atoi(u1_POS_3_char);
@@ -313,6 +325,10 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         u1_PAC_1_int    = atoi(u1_PAC_1_char);
         u1_PAC_2_int    = atoi(u1_PAC_2_char);
         u1_PAC_3_int    = atoi(u1_PAC_3_char);
+
+        hal.console->printf("%d,%d,%d,",   u1_POS_1_int, u1_POS_2_int, u1_POS_3_int);
+        hal.console->printf("%d,%d,%d,",   u1_CAC_1_int, u1_CAC_2_int, u1_CAC_3_int);
+        hal.console->printf("%d,%d,%d,", u1_PAC_1_int, u1_PAC_2_int, u1_PAC_3_int);
 
         u1_POS_1          = (float)((u1_POS_1_int - 5000.0) / 100.0);
         u1_POS_2          = (float)((u1_POS_2_int - 5000.0) / 100.0);
@@ -326,6 +342,10 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         u1_PAC_2          = (float)((u1_PAC_2_int - 5000.0) / 100.0);
         u1_PAC_3          = (float)((u1_PAC_3_int - 5000.0) / 100.0);
 
+        hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_POS_1, u1_POS_2, u1_POS_3);
+        hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_CAC_1, u1_CAC_2, u1_CAC_3);
+        hal.console->printf("%2.2f,%2.2f,%2.2f\n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
+
         u1_POS_1 = limit_on_forces_from_quad1(u1_POS_1);
         u1_POS_2 = limit_on_forces_from_quad1(u1_POS_2);
         u1_POS_3 = limit_on_forces_from_quad1(u1_POS_3);
@@ -338,11 +358,11 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         u1_PAC_2 = limit_on_forces_from_quad1(u1_PAC_2);
         u1_PAC_3 = limit_on_forces_from_quad1(u1_PAC_3);
 
-        hal.console->printf("%3.2f, %3.2f, %3.2f | ", u1_POS_1, u1_POS_2, u1_POS_3);
+        // hal.console->printf("%3.2f, %3.2f, %3.2f | ", u1_POS_1, u1_POS_2, u1_POS_3);
 
-        hal.console->printf("%3.2f, %3.2f, %3.2f | ", u1_CAC_1, u1_CAC_2, u1_CAC_3);
+        // hal.console->printf("%3.2f, %3.2f, %3.2f | ", u1_CAC_1, u1_CAC_2, u1_CAC_3);
 
-        hal.console->printf("%3.2f, %3.2f, %3.2f \n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
+        // hal.console->printf("%3.2f, %3.2f, %3.2f \n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
 
 
 }
