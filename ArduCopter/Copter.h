@@ -1005,6 +1005,8 @@ private:
     Vector3f sat_q_dot(Vector3f vec);
 
 
+    float limit_on_desired_angles(float angle);
+
 
 #if MODE_ACRO_ENABLED == ENABLED
 #if FRAME_CONFIG == HELI_FRAME

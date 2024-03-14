@@ -64,6 +64,7 @@ int u1_PAC_3_int     = 0.0;
 
 Vector3f qc_2(0.0,0.0,-1.0);
 Vector3f qp(1.0,0.0,0.0);
+Vector3f qp_dot(0.0,0.0,0.0);
 
 int QuadCam1qpd_port    = 1;
 int PAMD_device_port    = 2;
@@ -101,7 +102,7 @@ void Copter::userhook_FastLoop()
 
     get_CAM_device_Data();
     get_PAMD_device_Data();
-    // get_Quad1_CAM1_qpd_Data();
+    get_Quad1_CAM1_qpd_Data();
     // hal.console->printf("Hi Pratik from Ardupilot \n");
 
 }
@@ -118,7 +119,6 @@ void Copter::userhook_50Hz()
 void Copter::userhook_MediumLoop()
 {
     // put your 10Hz code here
-        get_Quad1_CAM1_qpd_Data();
 
 }
 #endif
@@ -209,18 +209,18 @@ void Copter::get_PAMD_device_Data()
         PAMD_pitch =  (float)((PAMD_pitch_int - 500000.0) / 100.0);
         PAMD_yaw   =  (float)((PAMD_yaw_int - 500000.0) / 100.0);
 
-        if (PAMD_roll > 60.0){
-            PAMD_roll = 60.0;
+        if (PAMD_roll > 90.0){
+            PAMD_roll = 90.0;
         }
-        if (PAMD_roll < -60.0){
-            PAMD_roll = -60.0;
+        if (PAMD_roll < -90.0){
+            PAMD_roll = -90.0;
         }
 
-        if (PAMD_pitch > 60.0){
-            PAMD_pitch = 60.0;
+        if (PAMD_pitch > 90.0){
+            PAMD_pitch = 90.0;
         }
-        if (PAMD_pitch < -60.0){
-            PAMD_pitch = -60.0;
+        if (PAMD_pitch < -90.0){
+            PAMD_pitch = -90.0;
         }
 
         if (PAMD_yaw > 180.0){
@@ -247,12 +247,11 @@ void Copter::get_PAMD_device_Data()
 
 float Copter::limit_on_forces_from_quad1(float u)
 {
-    float limited_data = 0.0;
 
-    if (u < 0.0){ limited_data = 0.0;}
-    if (u > 15.0){ limited_data = 15.0;}
+    if (u < 0.0){ u = 0.0;}
+    if (u > 15.0){ u = 15.0;}
 
-    return limited_data;
+    return u;
 }
 
 void Copter::get_Quad1_CAM1_qpd_Data()
@@ -293,7 +292,7 @@ void Copter::get_Quad1_CAM1_qpd_Data()
             }
         }
 
-        hal.console->printf("%s\n\n", Quad1POS_CAM1_PAC);
+        // hal.console->printf("%s\n\n", Quad1POS_CAM1_PAC);
 
         for (int i = 0; i < 4; i++)
         {
@@ -310,9 +309,9 @@ void Copter::get_Quad1_CAM1_qpd_Data()
             u1_PAC_3_char[i]    = Quad1POS_CAM1_PAC[i+40];
         }
 
-        hal.console->printf("%s,%s,%s",   u1_POS_1_char, u1_POS_2_char, u1_POS_3_char);
-        hal.console->printf("%s,%s,%s",   u1_CAC_1_char, u1_CAC_2_char, u1_CAC_3_char);
-        hal.console->printf("%s,%s,%s\n", u1_PAC_1_char, u1_PAC_2_char, u1_PAC_3_char);
+        // hal.console->printf("%s,%s,%s",   u1_POS_1_char, u1_POS_2_char, u1_POS_3_char);
+        // hal.console->printf("%s,%s,%s",   u1_CAC_1_char, u1_CAC_2_char, u1_CAC_3_char);
+        // hal.console->printf("%s,%s,%s\n", u1_PAC_1_char, u1_PAC_2_char, u1_PAC_3_char);
 
         u1_POS_1_int    = atoi(u1_POS_1_char);
         u1_POS_2_int    = atoi(u1_POS_2_char);
@@ -326,9 +325,9 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         u1_PAC_2_int    = atoi(u1_PAC_2_char);
         u1_PAC_3_int    = atoi(u1_PAC_3_char);
 
-        hal.console->printf("%d,%d,%d,",   u1_POS_1_int, u1_POS_2_int, u1_POS_3_int);
-        hal.console->printf("%d,%d,%d,",   u1_CAC_1_int, u1_CAC_2_int, u1_CAC_3_int);
-        hal.console->printf("%d,%d,%d,", u1_PAC_1_int, u1_PAC_2_int, u1_PAC_3_int);
+        // hal.console->printf("%d,%d,%d,",   u1_POS_1_int, u1_POS_2_int, u1_POS_3_int);
+        // hal.console->printf("%d,%d,%d,",   u1_CAC_1_int, u1_CAC_2_int, u1_CAC_3_int);
+        // hal.console->printf("%d,%d,%d,", u1_PAC_1_int, u1_PAC_2_int, u1_PAC_3_int);
 
         u1_POS_1          = (float)((u1_POS_1_int - 5000.0) / 100.0);
         u1_POS_2          = (float)((u1_POS_2_int - 5000.0) / 100.0);
@@ -342,9 +341,9 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         u1_PAC_2          = (float)((u1_PAC_2_int - 5000.0) / 100.0);
         u1_PAC_3          = (float)((u1_PAC_3_int - 5000.0) / 100.0);
 
-        hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_POS_1, u1_POS_2, u1_POS_3);
-        hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_CAC_1, u1_CAC_2, u1_CAC_3);
-        hal.console->printf("%2.2f,%2.2f,%2.2f\n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
+        // hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_POS_1, u1_POS_2, u1_POS_3);
+        // hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_CAC_1, u1_CAC_2, u1_CAC_3);
+        // hal.console->printf("%2.2f,%2.2f,%2.2f\n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
 
         u1_POS_1 = limit_on_forces_from_quad1(u1_POS_1);
         u1_POS_2 = limit_on_forces_from_quad1(u1_POS_2);
@@ -358,12 +357,9 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         u1_PAC_2 = limit_on_forces_from_quad1(u1_PAC_2);
         u1_PAC_3 = limit_on_forces_from_quad1(u1_PAC_3);
 
-        // hal.console->printf("%3.2f, %3.2f, %3.2f | ", u1_POS_1, u1_POS_2, u1_POS_3);
-
-        // hal.console->printf("%3.2f, %3.2f, %3.2f | ", u1_CAC_1, u1_CAC_2, u1_CAC_3);
-
+        // hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_POS_1, u1_POS_2, u1_POS_3);
+        // hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_CAC_1, u1_CAC_2, u1_CAC_3);
         // hal.console->printf("%3.2f, %3.2f, %3.2f \n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
-
 
 }
 

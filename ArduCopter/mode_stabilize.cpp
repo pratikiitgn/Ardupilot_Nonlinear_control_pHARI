@@ -1,8 +1,19 @@
 #include "Copter.h"
+#include "mycontroller_usercode.h"
 
-/*
- * Init and run calls for stabilize flight mode
- */
+float human_roll_command        = 0.0;
+float human_pitch_command       = 0.0;
+float human_yaw_rate_command    = 0.0;
+float human_throttle_command    = 0.0;
+
+
+float TRO_target_roll_angle     = 0.0;     //  [-45 45] degrees
+float TRO_target_pitch_angle    = 0.0;     //  [-45 45] degrees
+float TRO_target_yaw_rate       = 0.0;      //  [-20 20] degrees/sec
+float TRO_target_throttle       = 0.0;     //  [0 1] 0.38 - is for hovering condition almost
+
+Vector3f qp_old(0.0,0.0,0.0);
+
 
 // stabilize_run - runs the main stabilize controller
 // should be called at 100hz or more
@@ -13,6 +24,8 @@ void ModeStabilize::run()
 
     // convert pilot input to lean angles
     float target_roll, target_pitch;
+    // target_roll = 10*10;
+
     get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, copter.aparm.angle_max);
 
     // get pilot's desired yaw rate
@@ -64,9 +77,72 @@ void ModeStabilize::run()
         break;
     }
 
+
+//////////////////////////////////////////////////////////////////////////////////
+/////////////////////        Human commands              /////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+    // target_roll              [-4500 to 4500]
+    // target_pitch             [-4500 to 4500]
+    // target_yaw_rate          [-20250 to 20250]
+    // pilot_desired_throttle   [0 to 1]
+
+    human_roll_command          = target_roll;
+    human_pitch_command         = target_pitch;
+    human_yaw_rate_command      = target_yaw_rate;
+    human_throttle_command      = pilot_desired_throttle;
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////        estimate the required state of the system            ///////////
+//////////////////////////////////////////////////////////////////////////////////
+
+    qp_dot[0]       = qp[0] - qp_old[0];
+    qp_dot[1]       = qp[1] - qp_old[1];
+    qp_dot[2]       = qp[2] - qp_old[2];
+
+    qp_old          = qp;
+
+    hal.console->printf("%3.3f,",   qp[2]);
+    hal.console->printf("%3.3f\n",  qp_dot[2]);
+
+//////////////////////////////////////////////////////////////////////////////////
+/////////////////////        Final control inputs        /////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+    float kp_qp3 = 1;
+    float kd_qp3 = 1;
+
+    TRO_target_throttle       = kp_qp3 * (qp[2]) + kd_qp3 * qp_dot[2];     //  [0 1] 0.38 - is for hovering condition almost
+
+
+    TRO_target_roll_angle     = 10.0;     //  [-45 45] degrees
+    TRO_target_pitch_angle    = 10.0;     //  [-45 45] degrees
+    TRO_target_yaw_rate       = 0.0;      //  [-20 20] degrees/sec
+
+
+
+//////////////////////////////////////////////////////////////////////////////////
+////////////        final altitude and attitude controller    ////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
     // call attitude controller
-    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
+    attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(TRO_target_roll_angle*100, TRO_target_pitch_angle*100, TRO_target_yaw_rate*1000);
 
     // output pilot's throttle
-    attitude_control->set_throttle_out(pilot_desired_throttle, true, g.throttle_filt);
+    attitude_control->set_throttle_out(TRO_target_throttle, true, g.throttle_filt);
+
+}
+
+float limit_on_desired_angles(float angle)
+{
+    if (angle > 45.0)
+    {
+        angle = 45.0;
+    }
+
+    if (angle < -45.0)
+    {
+        angle = -45.0;
+    }
+    return angle;
 }
