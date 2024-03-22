@@ -22,10 +22,6 @@ char PAMD_roll_char[]       = "500000";
 char PAMD_pitch_char[]      = "500000";
 char PAMD_yaw_char[]        = "500000";
 
-float quad_roll             = 0.0;
-float quad_pitch            = 0.0;
-float quad_yaw              = 0.0;
-
 float u1_POS_1          = 0.0;
 float u1_POS_2          = 0.0;
 float u1_POS_3          = 0.0;
@@ -63,8 +59,12 @@ int u1_PAC_2_int     = 0.0;
 int u1_PAC_3_int     = 0.0;
 
 Vector3f qc_2(0.0,0.0,-1.0);
+Vector3f qc_2_dot(0.0,0.0,0.0);
+Vector3f qc_2_old(0.0,0.0,0.0);
+
 Vector3f qp(1.0,0.0,0.0);
 Vector3f qp_dot(0.0,0.0,0.0);
+Vector3f qp_old(0.0,0.0,0.0);
 
 int QuadCam1qpd_port    = 1;
 int PAMD_device_port    = 2;
@@ -93,10 +93,6 @@ void Copter::userhook_init()
 void Copter::userhook_FastLoop()
 {
     // put your 100Hz code here
-
-    quad_roll        =  (ahrs.roll_sensor)  / 100.0;     // degrees 
-    quad_pitch       = -(ahrs.pitch_sensor) / 100.0;     // degrees 
-    quad_yaw         = 360.0 - (ahrs.yaw_sensor)   / 100.0;     // degrees 
 
     // hal.console->printf("Roll -> %f\n",quad_roll);
 
@@ -207,7 +203,21 @@ void Copter::get_PAMD_device_Data()
 
         PAMD_roll  =  (float)((PAMD_roll_int  - 500000.0) / 100.0);
         PAMD_pitch =  (float)((PAMD_pitch_int - 500000.0) / 100.0);
-        PAMD_yaw   =  (float)((PAMD_yaw_int - 500000.0) / 100.0);
+        float PAMD_yaw_raw   =  (float)((PAMD_yaw_int - 500000.0) / 100.0);
+
+        if (PAMD_yaw_raw > 0.0){
+            PAMD_yaw = PAMD_yaw_raw;
+        }else{
+            PAMD_yaw = 360.0 + PAMD_yaw_raw;
+        }
+
+        PAMD_yaw = PAMD_yaw - 90.0;
+
+        if (PAMD_yaw < 0.0){
+            PAMD_yaw = 360.0 + PAMD_yaw;
+        }
+
+        // hal.console->printf("%3.2f, %3.2f \n", PAMD_yaw, quad_yaw);
 
         if (PAMD_roll > 90.0){
             PAMD_roll = 90.0;
@@ -223,12 +233,12 @@ void Copter::get_PAMD_device_Data()
             PAMD_pitch = -90.0;
         }
 
-        if (PAMD_yaw > 180.0){
-            PAMD_yaw = 180.0;
-        }
-        if (PAMD_yaw < -180.0){
-            PAMD_yaw = -180.0;
-        }
+        // if (PAMD_yaw > 180.0){
+        //     PAMD_yaw = 180.0;
+        // }
+        // if (PAMD_yaw < -180.0){
+        //     PAMD_yaw = -180.0;
+        // }
 
         // hal.console->printf("%3.3f,", PAMD_roll);
         // hal.console->printf("%3.3f,", PAMD_pitch);
@@ -236,12 +246,38 @@ void Copter::get_PAMD_device_Data()
 
         Vector3f rpy_vector(PAMD_roll*PI/180.0,PAMD_pitch*PI/180.0,PAMD_yaw*PI/180.0);
         Matrix3f R_payload(eulerAnglesToRotationMatrix(rpy_vector));
-        Vector3f e_3(0,0,1.0);
-        qp = Matrix_vector_mul(R_payload,e_3);
+        Vector3f e_1(1.0,0,0.0);
+        qp = Matrix_vector_mul(R_payload,e_1);
+
+        // float constant_orientation = -PI/2.0;
+        // Matrix3f R_z_plus_90_deg(
+        //        cosf(constant_orientation),   -sinf(constant_orientation),      0,
+        //        sinf(constant_orientation),    cosf(constant_orientation),      0,
+        //        0,                             0,                               1);
+
+        // qp = Matrix_vector_mul(R_z_plus_90_deg, Matrix_vector_mul(R_payload, e_1));
+
+        qp_dot[0]       = qp[0] - qp_old[0];
+        qp_dot[1]       = qp[1] - qp_old[1];
+        qp_dot[2]       = qp[2] - qp_old[2];
+
+        qp_old          = qp;
 
         // hal.console->printf("%3.3f,",  qp[0]);
         // hal.console->printf("%3.3f,",  qp[1]);
         // hal.console->printf("%3.3f\n", qp[2]);
+
+        // hal.console->printf("%3.3f,",  R_payload[0][0]);
+        // hal.console->printf("%3.3f,",  R_payload[1][0]);
+        // hal.console->printf("%3.3f,",  R_payload[2][0]);
+
+        // hal.console->printf("%3.3f,",  R_payload[0][1]);
+        // hal.console->printf("%3.3f,",  R_payload[1][1]);
+        // hal.console->printf("%3.3f,",  R_payload[2][1]);
+
+        // hal.console->printf("%3.3f,",  R_payload[0][2]);
+        // hal.console->printf("%3.3f,",  R_payload[1][2]);
+        // hal.console->printf("%3.3f\n", R_payload[2][2]);
 
 }
 
@@ -469,8 +505,14 @@ void Copter::get_CAM_device_Data()
         qc_2 = Matrix_vector_mul(R,Matrix_vector_mul(CAM_R_x,Matrix_vector_mul(CAM_R_y,e_3_neg)));
         qc_2 = sat_q(qc_2);
 
-}
+        // hal.console->printf("%3.3f,%3.3f,%3.3f\n", qc_2[0], qc_2[1], qc_2[2]);
 
+        qc_2_dot[0]     = qc_2[0] - qc_2_old[0];
+        qc_2_dot[1]     = qc_2[1] - qc_2_old[1];
+        qc_2_dot[2]     = qc_2[2] - qc_2_old[2];
+
+        qc_2_old        = qc_2;
+}
 
 Vector3f Copter::Matrix_vector_mul(Matrix3f R, Vector3f v){
     Vector3f mul_vector(
@@ -511,7 +553,7 @@ Matrix3f Copter::eulerAnglesToRotationMatrix(Vector3f rpy){
                0,               0,                  1);
 
     // Combined rotation matrix
-    Matrix3f R = R_z * R_y * R_x;
+    Matrix3f R = R_z * R_x * R_y;
     return R;
 }
 
@@ -539,4 +581,37 @@ Vector3f Copter::sat_q_dot(Vector3f vec){
         }
     }
     return vec;
+}
+
+float Copter::dot_product(Vector3f v1, Vector3f v2)
+{
+    return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
+}
+
+Matrix3f Copter::Matrix_to_matrix_multiplication(Matrix3f M1, Matrix3f M2)
+{
+    Matrix3f M;
+
+    Vector3f M1_r1(M1[0][0], M1[0][1], M1[0][2]);
+    Vector3f M1_r2(M1[1][0], M1[1][1], M1[1][2]);
+    Vector3f M1_r3(M1[2][0], M1[2][1], M1[2][2]);
+
+    Vector3f M2_c1(M2[0][0], M2[1][0], M2[2][0]);
+    Vector3f M2_c2(M2[0][1], M2[1][1], M2[2][1]);
+    Vector3f M2_c3(M2[0][2], M2[1][2], M2[2][2]);
+
+    M[0][0]     = dot_product(M1_r1, M2_c1);
+    M[0][1]     = dot_product(M1_r1, M2_c2);
+    M[0][2]     = dot_product(M1_r1, M2_c3);
+    
+    M[1][0]     = dot_product(M1_r2, M2_c1);
+    M[1][1]     = dot_product(M1_r2, M2_c2);
+    M[1][2]     = dot_product(M1_r2, M2_c3);
+
+    M[2][0]     = dot_product(M1_r3, M2_c1);
+    M[2][1]     = dot_product(M1_r3, M2_c2);
+    M[2][2]     = dot_product(M1_r3, M2_c3);
+
+    return M;
+
 }

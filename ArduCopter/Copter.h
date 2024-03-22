@@ -998,12 +998,13 @@ private:
     void log_IROS_HH_acc();
     void log_IROS_ATT_Track();
     Matrix3f eulerAnglesToRotationMatrix(Vector3f rpy);
+    Matrix3f Matrix_to_matrix_multiplication(Matrix3f M1, Matrix3f M2);
     Vector3f Matrix_vector_mul(Matrix3f R, Vector3f v);
     Matrix3f hatmap(Vector3f v);
     void cable_states();
     Vector3f sat_q(Vector3f vec);
     Vector3f sat_q_dot(Vector3f vec);
-
+    float dot_product(Vector3f v1, Vector3f v2);
 
     float limit_on_desired_angles(float angle);
 

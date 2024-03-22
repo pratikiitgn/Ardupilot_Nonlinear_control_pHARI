@@ -1559,6 +1559,22 @@ public:
     bool allows_autotune() const override { return true; }
     bool allows_flip() const override { return true; }
 
+    float limit_on_desired_angles(float angle);
+    float limit_on_yaw_rate(float angle_dot);
+    float limit_on_thurst_val(float val);
+    float simple_fil_low_pos(int iteration, float array[], float current_value);
+    float limit_on_q(float q_);
+    float limit_on_q_dot(float q_dot);
+    Matrix3f hatmap(Vector3f v);
+    Vector3f Matrix_vector_mul(Matrix3f R, Vector3f v);
+    Matrix3f matrix_transpose(Matrix3f R);
+    float norm_of_vector(Vector3f v);
+    void pilot_input();
+    void quad_states();
+    Vector3f cross_product(Vector3f v1, Vector3f v2);
+    Vector3f Rotation_matrix_to_Euler_angle(Matrix3f R);
+
+
 protected:
 
     const char *name() const override { return "STABILIZE"; }
