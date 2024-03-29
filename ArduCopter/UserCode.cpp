@@ -377,9 +377,9 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         u1_PAC_2          = (float)((u1_PAC_2_int - 5000.0) / 100.0);
         u1_PAC_3          = (float)((u1_PAC_3_int - 5000.0) / 100.0);
 
-        // hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_POS_1, u1_POS_2, u1_POS_3);
-        // hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_CAC_1, u1_CAC_2, u1_CAC_3);
-        // hal.console->printf("%2.2f,%2.2f,%2.2f\n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
+        hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_POS_1, u1_POS_2, u1_POS_3);
+        hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_CAC_1, u1_CAC_2, u1_CAC_3);
+        hal.console->printf("%2.2f,%2.2f,%2.2f\n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
 
         u1_POS_1 = limit_on_forces_from_quad1(u1_POS_1);
         u1_POS_2 = limit_on_forces_from_quad1(u1_POS_2);
