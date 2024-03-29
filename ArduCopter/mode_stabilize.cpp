@@ -341,11 +341,11 @@ void ModeStabilize::run()
     b_2_des             = cross_product(b_3_des, b_1_c);
     b_1_des             = cross_product(b_2_des, b_3_des);
 
-    hal.console->printf("Human Yaw des -> %3.3f \n", human_des_yaw_command);
+    // hal.console->printf("Human Yaw des -> %3.3f \n", human_des_yaw_command);
 
-    hal.console->printf("b_1_des -> %3.3f, %3.3f, %3.3f, |\n", b_1_des[0], b_1_des[1], b_1_des[2]);
-    hal.console->printf("b_2_des -> %3.3f, %3.3f, %3.3f, |\n", b_2_des[0], b_2_des[1], b_2_des[2]);
-    hal.console->printf("b_3_des -> %3.3f, %3.3f, %3.3f, |\n", b_3_des[0], b_3_des[1], b_3_des[2]);
+    // hal.console->printf("b_1_des -> %3.3f, %3.3f, %3.3f, |\n", b_1_des[0], b_1_des[1], b_1_des[2]);
+    // hal.console->printf("b_2_des -> %3.3f, %3.3f, %3.3f, |\n", b_2_des[0], b_2_des[1], b_2_des[2]);
+    // hal.console->printf("b_3_des -> %3.3f, %3.3f, %3.3f, |\n", b_3_des[0], b_3_des[1], b_3_des[2]);
 
 
     Matrix3f R_quad_attitude(
@@ -356,8 +356,8 @@ void ModeStabilize::run()
 
     rpy_des = Rotation_matrix_to_Euler_angle(R_quad_attitude);
     // hal.console->printf("%3.3f Yaw_des -> ", human_des_yaw_command);
-    hal.console->printf("RPY_des ->  %3.3f, %3.3f, %3.3f \n", rpy_des[0], rpy_des[1], rpy_des[2]);
-    hal.console->printf("Quad_RPY -> %3.3f, %3.3f, %3.3f, |\n", quad_roll, quad_pitch, quad_yaw);
+    // hal.console->printf("RPY_des ->  %3.3f, %3.3f, %3.3f \n", rpy_des[0], rpy_des[1], rpy_des[2]);
+    // hal.console->printf("Quad_RPY -> %3.3f, %3.3f, %3.3f, |\n", quad_roll, quad_pitch, quad_yaw);
     // hal.console->printf("%3.3f, %3.3f \n", quad_yaw, rpy_des[2]);
 
     if (u2_norm > 2*mq*gravity_acc) { u2_norm = 2*mq*gravity_acc; }
