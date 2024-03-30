@@ -5,6 +5,8 @@ extern Vector3f quad_pos;
 extern Vector3f quad_pos_des;
 extern float quad_yaw_des;
 
+extern Vector3f b_1_c;
+
 extern float human_des_yaw_command;
 
 extern float quad_roll;
