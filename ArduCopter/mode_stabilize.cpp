@@ -211,8 +211,8 @@ void ModeStabilize::run()
 
 /////////////////////        Quad 1 position controller        /////////////////////////
 
-    hal.console->printf("%2.3f,%2.3f | ", quad_pos[0], quad_pos_des[0]);
-    hal.console->printf("%2.3f,%2.3f\n",  quad_pos[1], quad_pos_des[1]);
+    // hal.console->printf("%2.3f,%2.3f | ", quad_pos[0], quad_pos_des[0]);
+    // hal.console->printf("%2.3f,%2.3f\n",  quad_pos[1], quad_pos_des[1]);
     // hal.console->printf("%2.3f,%2.3f\n",quad_pos[2],quad_pos_des[2]);
 
     // hal.console->printf("X - (%2.2f,%2.2f,%2.2f) | ",quad_pos[0],quad_pos[1],quad_pos[2]);

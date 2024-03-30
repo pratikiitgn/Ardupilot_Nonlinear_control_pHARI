@@ -284,6 +284,9 @@ void Copter::get_PAMD_device_Data()
 
 void Copter::send_Quad1_CAM1_qpd_Data()
 {
+        hal.console->printf("%3.3f,",  u1_POS[0]);
+        hal.console->printf("%3.3f,",  u1_POS[1]);
+        hal.console->printf("%3.3f\n", u1_POS[2]);
 
         int u1_pos_1_scaled         = 5000 + (limit_on_forces_from_quad1(u1_POS[0]) * 100);
         int u1_pos_2_scaled         = 5000 + (limit_on_forces_from_quad1(u1_POS[1]) * 100);
