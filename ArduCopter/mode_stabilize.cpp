@@ -40,6 +40,7 @@ Vector3f qc_1_dot(0.0,0.0,0.0);
 Vector3f qc_2_dot(0.0,0.0,0.0);
 
 Vector3f qp(1.0,0.0,0.0);
+
 Vector3f qc_1_fil(0.0,0.0,-1.0);
 Vector3f qc_1_dot_fil(0.0,0.0,0.0);
 Vector3f qc_1_des(0.0,0.0,-1.0);
@@ -66,14 +67,17 @@ Vector3f b_2_des(0.0,1.0,0.0);
 Vector3f b_3_des(0.0,0.0,1.0);
 Vector3f b_1_c(1.0,0.0,0.0);
 
+Vector3f eqc_1(0.0,0.0,0.0);
+Vector3f eqc_1_dot(0.0,0.0,0.0);
+
 Vector3f yaw_current_vector(1.0,0.0,0.0);
 Vector3f yaw_desired_vector(1.0,0.0,0.0);
 Vector3f error_yaw_vector(1.0,0.0,0.0);
 
-float third_value_of_error_yaw_vector       = 0.0;
-float third_value_of_error_yaw_vector_old   = 0.0;
-float third_value_of_error_yaw_vector_dot   = 0.0;
-float third_value_of_error_yaw_vector_dot_array[]     = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+float third_value_of_error_yaw_vector                   = 0.0;
+float third_value_of_error_yaw_vector_old               = 0.0;
+float third_value_of_error_yaw_vector_dot               = 0.0;
+float third_value_of_error_yaw_vector_dot_array[]       = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 
 float fil_phi_des_array[]       = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 float fil_theta_des_array[]     = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
@@ -95,6 +99,15 @@ float kd_y       = 3.3;
 
 float kp_z       = 12.0;
 float kd_z       = 4.0;
+
+float kp_qc_1_1     = 3.0;              // 3.0 (two quad best)  // 3.0 (outdoor best)  // 4  (Harness)
+float kd_qc_1_1     = 45.0;             // 45 (two quad best)  // 45.0 (outdoor best)  // 45 (Harness)
+
+float kp_qc_1_2     = 3.0;              // 3.0 (two quad best)  // 3.0 (outdoor best)   // 4  (Harness)
+float kd_qc_1_2     = 45.0;             // 45 (two quad best)  // 45.0 (outdoor best)   // 45 (Harness)
+
+float kp_qc_1_3     = 0.0;        //
+float kd_qc_1_3     = 0.0;        //  
 
 int arming_state_variable = 0;
 float ch_6_state = 0.0;
@@ -196,18 +209,40 @@ void ModeStabilize::run()
     human_throttle_command      = pilot_desired_throttle;
 
 
+//////////        filtering the cable attitude and its rate          ///////////
 
+    float qc_1_1_fil    = limit_on_q(simple_fil_low_pos(5, fil_qc_11_array, qc_1[0]));
+    float qc_1_2_fil    = limit_on_q(simple_fil_low_pos(5, fil_qc_12_array, qc_1[1]));
+    float qc_1_3_fil    = limit_on_q(simple_fil_low_pos(5, fil_qc_13_array, qc_1[2]));
 
-    // if (arming_state_variable == 0){
-    //     if(motors->armed()){
-    //         quad_pos_des[0] =  inertial_nav.get_position_neu_cm().x / 100.0;
-    //         quad_pos_des[1] =  inertial_nav.get_position_neu_cm().y / 100.0;
-    //         // quad_pos_des[2] =  inertial_nav.get_position_neu_cm().z / 100.0;
+    float qc_1_1_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qc_11_dot_array, qc_1_dot[0]));
+    float qc_1_2_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qc_12_dot_array, qc_1_dot[1]));
+    float qc_1_3_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qc_13_dot_array, qc_1_dot[2]));
 
-    //         human_des_yaw_command       = quad_yaw;    // degrees [0 360]
-    //         arming_state_variable       = 1;
-    //     }
-    // }
+    // hal.console->printf("%3.3f,",   qc_2_1_fil);
+    // hal.console->printf("%3.3f,",   qc_2_2_fil);
+    // hal.console->printf("%3.3f\n",  qp_3_fil);
+    // hal.console->printf("%3.3f\n",  100*qc_2_1_dot_fil);
+    // hal.console->printf("%3.3f\n",  100*qc_2_2_dot_fil);
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////        cable attitude controller    /////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+    qc_1_fil[0]     = qc_1_1_fil;
+    qc_1_fil[1]     = qc_1_2_fil;
+    qc_1_fil[2]     = qc_1_3_fil;
+
+    qc_1_dot_fil[0] = qc_1_1_dot_fil;
+    qc_1_dot_fil[1] = qc_1_2_dot_fil;
+    qc_1_dot_fil[2] = qc_1_3_dot_fil;
+
+    eqc_1           = Matrix_vector_mul(hatmap(qc_1_fil), Matrix_vector_mul(hatmap(qc_1_fil), qc_1_des));
+    eqc_1_dot       = qc_1_dot_fil;
+
+    u1_CAC1[0]      =  kp_qc_1_1 * eqc_1[0] + kd_qc_1_1 * eqc_1_dot[0];
+    u1_CAC1[1]      =  kp_qc_1_2 * eqc_1[1] + kd_qc_1_2 * eqc_1_dot[1];
+    u1_CAC1[2]      =  kp_qc_1_3 * eqc_1[2] + kd_qc_1_3 * eqc_1_dot[2];
+
 
 /////////////////////        Quad 1 position controller        /////////////////////////
 
@@ -547,4 +582,36 @@ Matrix3f ModeStabilize::hatmap(Vector3f v){
                v[2],    0,     -v[0],
                -v[1],      v[0],       0);
     return R;
+}
+
+float ModeStabilize::limit_on_q(float q_)
+{
+    float max_value = 1.0;
+
+    if (q_ > max_value)
+    {
+        q_ = max_value;
+    }
+
+    if (q_ < -max_value)
+    {
+        q_ = -max_value;
+    }
+    return q_;
+}
+
+float ModeStabilize::limit_on_q_dot(float q_)
+{
+    float max_value = 3.0;
+
+    if (q_ > max_value)
+    {
+        q_ = max_value;
+    }
+
+    if (q_ < -max_value)
+    {
+        q_ = -max_value;
+    }
+    return q_;
 }

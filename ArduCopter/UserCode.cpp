@@ -556,8 +556,8 @@ void Copter::get_CAM_device_Data()
                 0,       sinf(CAM_roll*PI/180),   cosf(CAM_roll*PI/180)
                 );
 
-        qc_2 = Matrix_vector_mul(R,Matrix_vector_mul(CAM_R_x,Matrix_vector_mul(CAM_R_y,e_3_neg)));
-        qc_2 = sat_q(qc_2);
+        qc_1 = Matrix_vector_mul(R,Matrix_vector_mul(CAM_R_x,Matrix_vector_mul(CAM_R_y,e_3_neg)));
+        qc_1 = sat_q(qc_1);
 
 }
 
