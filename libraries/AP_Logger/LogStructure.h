@@ -665,9 +665,9 @@ struct PACKED log_VER {
 struct PACKED log_quad_pos_ {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float  x;
-    float  y;
-    float  z;
+    float  x_TRO;
+    float  y_TRO;
+    float  z_TRO;
 };
 
 struct PACKED log_quad_pos_des_ {
@@ -727,6 +727,15 @@ struct PACKED log_Human_CMD_ {
     float  zddot;
     float  psiddot;
 };
+
+struct PACKED log_Human_QPD_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  qpd_1;
+    float  qpd_2;
+    float  qpd_3;
+};
+
 // FMT messages define all message formats other than FMT
 // UNIT messages define units which can be referenced by FMTU messages
 // FMTU messages associate types (e.g. centimeters/second/second) to FMT message fields
@@ -1361,7 +1370,7 @@ LOG_STRUCTURE_FROM_VISUALODOM \
     { LOG_FILE_MSG, sizeof(log_File), \
       "FILE",   "NIBZ", "FileName,Offset,Length,Data", "----", "----" }, \
     { LOG_QUAD_POS_MSG, sizeof(log_quad_pos_), \
-      "QPOS",   "Qfff", "TimeUS,x,y,z", "s---", "F---", true }, \
+      "QPOS",   "Qfff", "TimeUS,x_TRO,y_TRO,z_TRO", "s---", "F---", true }, \
     { LOG_QUAD_POD_MSG, sizeof(log_quad_pos_des_), \
       "QPOD",   "Qffff", "TimeUS,xd,yd,zd,psid", "s----", "F----", true }, \
     { LOG_QUAD_VEL_MSG, sizeof(log_quad_vel_), \
@@ -1371,11 +1380,13 @@ LOG_STRUCTURE_FROM_VISUALODOM \
     { LOG_QUAD_AVG_MSG, sizeof(log_quad_ANG_VEL_), \
       "QAVG",   "Qfff", "TimeUS,phdot,thdot,psidot", "s---", "F---", true }, \
     { LOG_CABL_ATT_MSG, sizeof(log_Cab1_ATT_), \
-      "CATT",   "Qfff", "TimeUS,qc1_log,qc1_log,qc1_log", "s---", "F---", true }, \
+      "CATT",   "Qfff", "TimeUS,qc1_log,qc2_log,qc3_log", "s---", "F---", true }, \
     { LOG_CABL_DOT_MSG, sizeof(log_Cab1_ATT_dot_), \
       "CDOT",   "Qfff", "TimeUS,qc1dot_log,qc2dot_log,qc3dot_log", "s---", "F----", true }, \
     { LOG_HUMN_CMD_MSG, sizeof(log_Human_CMD_), \
       "HCMD",   "Qffff", "TimeUS,xddot,yddot,zddot, psiddot", "s----", "F----", true }, \
+    { LOG_HUMN_QPD_MSG, sizeof(log_Human_QPD_), \
+      "HQPD",   "Qfff", "TimeUS,qpd_1,qpd_2,qpd_3", "s---", "F---", true }, \
 LOG_STRUCTURE_FROM_AIS \
     { LOG_SCRIPTING_MSG, sizeof(log_Scripting), \
       "SCR",   "QNIii", "TimeUS,Name,Runtime,Total_mem,Run_mem", "s#sbb", "F-F--", true }, \
@@ -1476,6 +1487,7 @@ enum LogMessages : uint8_t {
     LOG_CABL_ATT_MSG,
     LOG_CABL_DOT_MSG,
     LOG_HUMN_CMD_MSG,
+    LOG_HUMN_QPD_MSG,
     _LOG_LAST_MSG_
 };
 
