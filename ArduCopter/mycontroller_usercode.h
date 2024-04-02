@@ -23,4 +23,6 @@ extern Vector3f u2_CAC2;
 extern Vector3f u2;
 
 extern Vector3f qp_des_from_quad_1;
+extern Vector3f qp_des;
+
 extern float H_yaw_des_payload_attitude;

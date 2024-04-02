@@ -754,6 +754,14 @@ struct PACKED log_u2_ {
     float  u2_3_log;
 };
 
+struct PACKED log_qp_des_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  qpdes_1_log;
+    float  qpdes_2_log;
+    float  qpdes_3_log;
+};
+
 // FMT messages define all message formats other than FMT
 // UNIT messages define units which can be referenced by FMTU messages
 // FMTU messages associate types (e.g. centimeters/second/second) to FMT message fields
@@ -1409,6 +1417,8 @@ LOG_STRUCTURE_FROM_VISUALODOM \
       "U2C2",   "Qfff", "TimeUS,u2_CAC2_1_log,u2_CAC2_2_log,u2_CAC2_3_log", "s---", "F---", true }, \
     { LOG_U2_MSG, sizeof(log_u2_), \
       "U2U2",   "Qfff", "TimeUS,u2_1_log,u2_2_log,u2_3_log", "s---", "F---", true }, \
+    { LOG_QP_DES_MSG, sizeof(log_qp_des_), \
+      "QPDD",   "Qfff", "TimeUS,qpdes_1_log,qpdes_2_log,qpdes_3_log", "s---", "F---", true }, \
 LOG_STRUCTURE_FROM_AIS \
     { LOG_SCRIPTING_MSG, sizeof(log_Scripting), \
       "SCR",   "QNIii", "TimeUS,Name,Runtime,Total_mem,Run_mem", "s#sbb", "F-F--", true }, \
@@ -1514,6 +1524,7 @@ enum LogMessages : uint8_t {
     LOG_U2_PAC_MSG,
     LOG_U2_CAC2_MSG,
     LOG_U2_MSG,
+    LOG_QP_DES_MSG,
     _LOG_LAST_MSG_
 };
 

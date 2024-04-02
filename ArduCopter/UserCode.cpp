@@ -116,6 +116,7 @@ void Copter::userhook_FastLoop()
     Log_u2_PAC_follower();                          // log_u2_PAC           | LOG_U2_PAC_MSG    |   UPAC
     Log_u2_CAC2_follower();                         // log_u2_CAC2          | LOG_U2_CAC2_MSG   |   U2C2
     Log_u2_follower();                              // log_u2_              | LOG_U2_MSG        |   U2U2
+    Log_qp_des_from_follower();                     // log_qp_des_          | LOG_QP_DES_MSG    |   QPDD
 
 }
 #endif
@@ -780,6 +781,18 @@ void Copter::Log_u2_follower()
     u2_1_log : u2[0],
     u2_2_log : u2[1],
     u2_3_log : u2[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_qp_des_from_follower()
+{
+    struct log_qp_des_ pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_QP_DES_MSG),
+    time_us  : AP_HAL::micros64(),
+    qpdes_1_log : qp_des[0],
+    qpdes_2_log : qp_des[1],
+    qpdes_3_log : qp_des[2],
     };
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
