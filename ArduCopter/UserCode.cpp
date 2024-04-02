@@ -321,7 +321,11 @@ void Copter::send_Quad1_CAM1_qpd_Data()
         int u1_PAC_2_scaled         = 5000 + (limit_on_forces_from_PAC(u1_PAC[1]) * 100);
         int u1_PAC_3_scaled         = 5000 + (limit_on_forces_from_PAC(u1_PAC[2]) * 100);
 
+
+
         int H_desired_yaw_rate_for_payload_attitude_scaled     = 5000 + (H_desired_yaw_rate_for_payload_attitude * 100);
+
+        // hal.console->printf("%3.2f\n", H_desired_yaw_rate_for_payload_attitude);
 
         for (int i = 3; i >= 0; i--) {
             u1_POS_1_array[i] = u1_pos_1_scaled % 10;
