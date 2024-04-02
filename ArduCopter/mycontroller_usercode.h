@@ -10,8 +10,14 @@ extern float quad_roll;
 extern float quad_pitch;
 extern float quad_yaw;
 
-extern float quad_x;
-extern float quad_y;
-extern float quad_z;
+extern float quad_roll_dot;
+extern float quad_pitch_dot;
+extern float quad_yaw_dot;
+
+extern Vector3f quad2_pos;
+extern Vector3f quad2_vel;
 
 extern float PAMD_yaw;
+extern Vector3f u2_PAC;
+extern Vector3f u2_CAC2;
+extern Vector3f u2;

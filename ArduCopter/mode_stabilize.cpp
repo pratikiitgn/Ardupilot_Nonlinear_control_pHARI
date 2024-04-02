@@ -34,6 +34,9 @@ float fil_theta_des_array[]     = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0
 
 Vector3f b1_quad(1.0,0.0,0.0);
 
+Vector3f quad2_pos(1.0,0.0,0.0);
+Vector3f quad2_vel(1.0,0.0,0.0);
+
 Vector3f qc_2_fil(0.0,0.0,-1.0);
 Vector3f qc_2_dot_fil(0.0,0.0,0.0);
 Vector3f qc_2_des(0.0,0.0,-1.0);
@@ -68,13 +71,6 @@ float third_value_of_error_yaw_vector_old   = 0.0;
 float third_value_of_error_yaw_vector_dot   = 0.0;
 float third_value_of_error_yaw_vector_dot_array[]     = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 
-float quad_x                = 0.0;
-float quad_y                = 0.0;
-float quad_z                = 0.0;
-float quad_x_dot            = 0.0;
-float quad_y_dot            = 0.0;
-float quad_z_dot            = 0.0;
-
 float quad_roll             = 0.0;
 float quad_pitch            = 0.0;
 float quad_yaw              = 0.0;
@@ -83,9 +79,6 @@ float quad_pitch_dot        = 0.0;
 float quad_yaw_dot          = 0.0;
 
 float yaw_initially         = 0.0;
-float quad_x_ini            = 0.0;
-float quad_y_ini            = 0.0;
-float quad_z_ini            = 0.0;
 
 Vector3f rpy_des(0.0,0.0,0.0);
 float ph_des                = 0.0;
@@ -147,21 +140,11 @@ void ModeStabilize::run()
         // Motors should be Stopped
         motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::SHUT_DOWN);
 
-        float quad_x_ini_inertial   =  inertial_nav.get_position_neu_cm().x / 100.0;
-        float quad_y_ini_inertial   =  inertial_nav.get_position_neu_cm().y / 100.0;
-
         yaw_initially               = quad_yaw;    // degrees [0 360]
         human_des_yaw_command       = quad_yaw;    // degrees [0 360]
 
-        // if (PAMD_yaw > human_des_yaw_command)
-        // {   
         delta_yaw = human_des_yaw_command - PAMD_yaw;
         
-        // }
-
-        quad_x_ini =  cosf((yaw_initially*PI/180.0))*quad_x_ini_inertial + sinf((yaw_initially*PI/180.0))*quad_y_ini_inertial;
-        quad_y_ini = -sinf((yaw_initially*PI/180.0))*quad_x_ini_inertial + cosf((yaw_initially*PI/180.0))*quad_y_ini_inertial;
-
     } else if (copter.ap.throttle_zero
                || (copter.air_mode == AirMode::AIRMODE_ENABLED && motors->get_spool_state() == AP_Motors::SpoolState::SHUT_DOWN)) {
         // throttle_zero is never true in air mode, but the motors should be allowed to go through ground idle
@@ -615,25 +598,6 @@ void ModeStabilize::quad_states(){
     // Position in inertial reference frame
     // inertial_nav.get_position_neu_cm().x;
     inertial_nav.get_velocity_neu_cms().x;
-
-    float quad_x_inertial =  inertial_nav.get_position_neu_cm().x / 100.0;
-    float quad_y_inertial =  inertial_nav.get_position_neu_cm().y / 100.0;
-
-    // position in body reference frame
-    quad_x =  ( cosf((quad_yaw*PI/180.0))*quad_x_inertial + sinf((quad_yaw*PI/180.0))*quad_y_inertial) - quad_x_ini;
-    quad_y =  (-sinf((quad_yaw*PI/180.0))*quad_x_inertial + cosf((quad_yaw*PI/180.0))*quad_y_inertial) - quad_y_ini;
-
-    quad_y =  -quad_y;
-    quad_z =  (inertial_nav.get_position_neu_cm().z / 100.0) - quad_z_ini;
-
-    // linear velocity in inertial frame of reference
-    float quad_x_dot_inertial =  inertial_nav.get_velocity_neu_cms().x /100.0;
-    float quad_y_dot_inertial =  inertial_nav.get_velocity_neu_cms().y /100.0;
-    quad_z_dot                =  inertial_nav.get_velocity_neu_cms().z /100.0;
-
-    // linear velocity in body reference frame
-    quad_x_dot =  (cosf((quad_yaw*PI/180.0))*quad_x_dot_inertial + sinf((quad_yaw*PI/180.0))*quad_y_dot_inertial);
-    quad_y_dot = (-sinf((quad_yaw*PI/180.0))*quad_x_dot_inertial + cosf((quad_yaw*PI/180.0))*quad_y_dot_inertial);
 
     quad_roll        =  (ahrs.roll_sensor)  / 100.0;     // degrees 
     quad_pitch       = -(ahrs.pitch_sensor) / 100.0;     // degrees 

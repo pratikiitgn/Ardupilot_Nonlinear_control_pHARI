@@ -662,6 +662,97 @@ struct PACKED log_VER {
     uint8_t build_type;
 };
 
+struct PACKED log_quad_pos_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  x2_TRO;
+    float  y2_TRO;
+    float  z2_TRO;
+};
+
+struct PACKED log_quad_vel_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  x2dot;
+    float  y2dot;
+    float  z2dot;
+};
+
+
+struct PACKED log_quad_RPY_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  ph2;
+    float  th2;
+    float  psi2;
+};
+
+struct PACKED log_quad_ANG_VEL_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  ph2dot;
+    float  th2dot;
+    float  psi2dot;
+};
+
+
+struct PACKED log_Cab2_ATT_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  qc2_1_log;
+    float  qc2_2_log;
+    float  qc2_3_log;
+};
+
+struct PACKED log_Cab2_ATT_dot_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  qc2_1dot_log;
+    float  qc2_2dot_log;
+    float  qc2_3dot_log;
+};
+
+
+
+struct PACKED log_Pay_ATT_CMD_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  qp1_log;
+    float  qp2_log;
+    float  qp3_log;
+};
+
+struct PACKED log_Pay_ATT_dot_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  qp1dot_log;
+    float  qp2dot_log;
+    float  qp3dot_log;
+};
+
+struct PACKED log_u2_PAC {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  u2_PAC_1_log;
+    float  u2_PAC_2_log;
+    float  u2_PAC_3_log;
+};
+
+struct PACKED log_u2_CAC2 {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  u2_CAC2_1_log;
+    float  u2_CAC2_2_log;
+    float  u2_CAC2_3_log;
+};
+
+struct PACKED log_u2_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  u2_1_log;
+    float  u2_2_log;
+    float  u2_3_log;
+};
 
 // FMT messages define all message formats other than FMT
 // UNIT messages define units which can be referenced by FMTU messages
@@ -1296,6 +1387,28 @@ LOG_STRUCTURE_FROM_VISUALODOM \
       "STAK", "QBBHHN", "TimeUS,Id,Pri,Total,Free,Name", "s#----", "F-----", true }, \
     { LOG_FILE_MSG, sizeof(log_File), \
       "FILE",   "NIBZ",       "FileName,Offset,Length,Data", "----", "----" }, \
+    { LOG_QUAD_POS_MSG, sizeof(log_quad_pos_), \
+      "QPOS",   "Qfff", "TimeUS,x2_TRO,y2_TRO,z2_TRO", "s---", "F---", true }, \
+    { LOG_QUAD_VEL_MSG, sizeof(log_quad_vel_), \
+      "QVEL",   "Qfff", "TimeUS,x2dot,y2dot,z2dot", "s---", "F---", true }, \
+    { LOG_QUAD_RPY_MSG, sizeof(log_quad_RPY_), \
+      "QRPY",   "Qfff", "TimeUS,ph2,th2,psi2", "s---", "F---", true }, \
+    { LOG_QUAD_AVG_MSG, sizeof(log_quad_ANG_VEL_), \
+      "QAVG",   "Qfff", "TimeUS,ph2dot,th2dot,psi2dot", "s---", "F---", true }, \
+    { LOG_CABL_ATT_MSG, sizeof(log_Cab2_ATT_), \
+      "CATT",   "Qfff", "TimeUS,qc2_1_log,qc2_2_log,qc2_3_log", "s---", "F---", true }, \
+    { LOG_CABL_DOT_MSG, sizeof(log_Cab2_ATT_dot_), \
+      "CDOT",   "Qfff", "TimeUS,qc2_1dot_log,qc2_2dot_log,qc2_3dot_log", "s---", "F---", true }, \
+    { LOG_PYLD_ATT_MSG, sizeof(log_Pay_ATT_CMD_), \
+      "PATT",   "Qfff", "TimeUS,qp1_log,qp2_log,qp3_log", "s---", "F---", true }, \
+    { LOG_PYLD_DOT_MSG, sizeof(log_Pay_ATT_dot_), \
+      "PDOT",   "Qfff", "TimeUS,qp1dot_log,qp2dot_log,qp3dot_log", "s---", "F---", true }, \
+    { LOG_U2_PAC_MSG, sizeof(log_u2_PAC), \
+      "UPAC",   "Qfff", "TimeUS,u2_PAC_1_log,u2_PAC_2_log,u2_PAC_3_log", "s---", "F---", true }, \
+    { LOG_U2_CAC2_MSG, sizeof(log_u2_CAC2), \
+      "U2C2",   "Qfff", "TimeUS,u2_CAC2_1_log,u2_CAC2_2_log,u2_CAC2_3_log", "s---", "F---", true }, \
+    { LOG_U2_MSG, sizeof(log_u2_), \
+      "U2U2",   "Qfff", "TimeUS,u2_1_log,u2_2_log,u2_3_log", "s---", "F---", true }, \
 LOG_STRUCTURE_FROM_AIS \
     { LOG_SCRIPTING_MSG, sizeof(log_Scripting), \
       "SCR",   "QNIii", "TimeUS,Name,Runtime,Total_mem,Run_mem", "s#sbb", "F-F--", true }, \
@@ -1303,6 +1416,8 @@ LOG_STRUCTURE_FROM_AIS \
       "VER",   "QBHBBBBIZHB", "TimeUS,BT,BST,Maj,Min,Pat,FWT,GH,FWS,APJ,BU", "s----------", "F----------", false }, \
     { LOG_MOTBATT_MSG, sizeof(log_MotBatt), \
       "MOTB", "QfffffB",  "TimeUS,LiftMax,BatVolt,ThLimit,ThrAvMx,ThrOut,FailFlags", "s------", "F------" , true }
+
+      
 
 // message types 0 to 63 reserved for vehicle specific use
 
@@ -1388,7 +1503,17 @@ enum LogMessages : uint8_t {
     LOG_RCOUT2_MSG,
     LOG_RCOUT3_MSG,
     LOG_IDS_FROM_FENCE,
-
+    LOG_QUAD_POS_MSG,
+    LOG_QUAD_VEL_MSG,
+    LOG_QUAD_RPY_MSG,
+    LOG_QUAD_AVG_MSG,
+    LOG_CABL_ATT_MSG,
+    LOG_CABL_DOT_MSG,
+    LOG_PYLD_ATT_MSG,
+    LOG_PYLD_DOT_MSG,
+    LOG_U2_PAC_MSG,
+    LOG_U2_CAC2_MSG,
+    LOG_U2_MSG,
     _LOG_LAST_MSG_
 };
 

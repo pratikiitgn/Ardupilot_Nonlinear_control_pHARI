@@ -105,11 +105,22 @@ void Copter::userhook_FastLoop()
     // put your 100Hz code here
 
     // hal.console->printf("Roll -> %f\n",quad_roll);
-
     get_CAM_device_Data();
     get_PAMD_device_Data();
     get_Quad1_CAM1_qpd_Data();
-    // hal.console->printf("Hi Pratik from Ardupilot \n");
+
+    // Enable data logging functions
+    Log_quad_pos_data_follower();                   // log_quad_pos_        | LOG_QUAD_POS_MSG  |   QPOS
+    Log_quad_vel_data_follower();                   // log_quad_vel_        | LOG_QUAD_VEL_MSG  |   QVEL
+    Log_quad_RPY_data_follower();                   // log_quad_RPY_        | LOG_QUAD_RPY_MSG  |   QRPY
+    Log_quad_angular_velocity_data_follower();      // log_quad_ANG_VEL_    | LOG_QUAD_AVG_MSG  |   QAVG
+    Log_cable_2_attitude_data_follower();           // log_Cab2_ATT_        | LOG_CABL_ATT_MSG  |   CATT
+    Log_cable_2_attitude_dot_data_follower();       // log_Cab2_ATT_dot_    | LOG_CABL_DOT_MSG  |   CDOT
+    Log_payload_attitude_data_follower();           // log_Pay_ATT_CMD_     | LOG_PYLD_ATT_MSG  |   PATT
+    Log_payload_attitude_dot_data_follower();       // log_Pay_ATT_dot_     | LOG_PYLD_DOT_MSG  |   PDOT
+    Log_u2_PAC_follower();                          // log_u2_PAC           | LOG_U2_PAC_MSG    |   UPAC
+    Log_u2_CAC2_follower();                         // log_u2_CAC2          | LOG_U2_CAC2_MSG   |   U2C2
+    Log_u2_follower();                              // log_u2_              | LOG_U2_MSG        |   U2U2
 
 }
 #endif
@@ -637,4 +648,137 @@ Matrix3f Copter::Matrix_to_matrix_multiplication(Matrix3f M1, Matrix3f M2)
 
     return M;
 
+}
+
+void Copter::Log_quad_pos_data_follower()
+{
+    struct log_quad_pos_ pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_QUAD_POS_MSG),
+    time_us  : AP_HAL::micros64(),
+    x2_TRO        : quad2_pos[0],
+    y2_TRO        : quad2_pos[1],
+    z2_TRO        : quad2_pos[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_quad_vel_data_follower()
+{
+    struct log_quad_vel_ pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_QUAD_VEL_MSG),
+    time_us  : AP_HAL::micros64(),
+    x2dot    : quad2_vel[0],
+    y2dot    : quad2_vel[1],
+    z2dot    : quad2_vel[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_quad_RPY_data_follower()
+{
+    struct log_quad_RPY_ pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_QUAD_RPY_MSG),
+    time_us  : AP_HAL::micros64(),
+    ph2      : quad_roll,
+    th2      : quad_pitch,
+    psi2     : quad_yaw,
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_quad_angular_velocity_data_follower()
+{
+    struct log_quad_ANG_VEL_ pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_QUAD_AVG_MSG),
+    time_us  : AP_HAL::micros64(),
+    ph2dot   : quad_roll_dot,
+    th2dot   : quad_pitch_dot,
+    psi2dot   : quad_yaw_dot,
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_cable_2_attitude_data_follower()
+{
+    struct log_Cab2_ATT_ pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_CABL_ATT_MSG),
+    time_us  : AP_HAL::micros64(),
+    qc2_1_log  : qc_2[0],
+    qc2_2_log  : qc_2[1],
+    qc2_3_log  : qc_2[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_cable_2_attitude_dot_data_follower()
+{
+    struct log_Cab2_ATT_dot_ pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_CABL_DOT_MSG),
+    time_us  : AP_HAL::micros64(),
+    qc2_1dot_log : qc_2_dot[0],
+    qc2_2dot_log : qc_2_dot[1],
+    qc2_3dot_log : qc_2_dot[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+
+void Copter::Log_payload_attitude_data_follower()
+{
+    struct log_Pay_ATT_CMD_ pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_PYLD_ATT_MSG),
+    time_us  : AP_HAL::micros64(),
+    qp1_log  : qp[0],
+    qp2_log  : qp[1],
+    qp3_log  : qp[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_payload_attitude_dot_data_follower()
+{
+    struct log_Pay_ATT_dot_ pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_PYLD_DOT_MSG),
+    time_us  : AP_HAL::micros64(),
+    qp1dot_log : qp_dot[0],
+    qp2dot_log : qp_dot[1],
+    qp3dot_log : qp_dot[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_u2_PAC_follower()
+{
+    struct log_u2_PAC pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_U2_PAC_MSG),
+    time_us  : AP_HAL::micros64(),
+    u2_PAC_1_log : u2_PAC[0],
+    u2_PAC_2_log : u2_PAC[1],
+    u2_PAC_3_log : u2_PAC[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_u2_CAC2_follower()
+{
+    struct log_u2_CAC2 pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_U2_CAC2_MSG),
+    time_us  : AP_HAL::micros64(),
+    u2_CAC2_1_log : u2_CAC2[0],
+    u2_CAC2_2_log : u2_CAC2[1],
+    u2_CAC2_3_log : u2_CAC2[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_u2_follower()
+{
+    struct log_u2_ pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_U2_MSG),
+    time_us  : AP_HAL::micros64(),
+    u2_1_log : u2[0],
+    u2_2_log : u2[1],
+    u2_3_log : u2[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
 }

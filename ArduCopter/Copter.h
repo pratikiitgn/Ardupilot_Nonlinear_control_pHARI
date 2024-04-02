@@ -1005,9 +1005,18 @@ private:
     Vector3f sat_q(Vector3f vec);
     Vector3f sat_q_dot(Vector3f vec);
     float dot_product(Vector3f v1, Vector3f v2);
-
     float limit_on_desired_angles(float angle);
-
+    void Log_quad_pos_data_follower();
+    void Log_quad_vel_data_follower();
+    void Log_quad_RPY_data_follower();
+    void Log_quad_angular_velocity_data_follower();
+    void Log_cable_2_attitude_data_follower();
+    void Log_cable_2_attitude_dot_data_follower();
+    void Log_payload_attitude_data_follower();
+    void Log_payload_attitude_dot_data_follower();
+    void Log_u2_PAC_follower();
+    void Log_u2_CAC2_follower();
+    void Log_u2_follower();
 
 #if MODE_ACRO_ENABLED == ENABLED
 #if FRAME_CONFIG == HELI_FRAME
