@@ -50,13 +50,14 @@ int u1_PAC_3_array[6];
 
 int H_desired_yaw_rate_for_payload_attitude_array[6];
 
+Vector3f qc_1_old(0.0,0.0,0.0);
 
-//           parameter prefix 
-// UART4  -  SERIAL3_           - GPS      - GPS1       
-// UART8 -   SERIAL4_           - SERIAL4  - GPS2       
+//           parameter prefix
+// UART4  -  SERIAL3_           - GPS      - GPS1
+// UART8 -   SERIAL4_           - SERIAL4  - GPS2
 
-// USART2 -  SERIAL1_             TELEM1     TELEM1     
-// USART3 -  SERIAL2_             TELEM2     TELEM2     
+// USART2 -  SERIAL1_             TELEM1     TELEM1
+// USART3 -  SERIAL2_             TELEM2     TELEM2
 
 #ifdef USERHOOK_INIT
 void Copter::userhook_init()
@@ -534,6 +535,12 @@ void Copter::get_CAM_device_Data()
 
         qc_1 = Matrix_vector_mul(R,Matrix_vector_mul(CAM_R_x,Matrix_vector_mul(CAM_R_y,e_3_neg)));
         qc_1 = sat_q(qc_1);
+
+        qc_1_dot[0]     = qc_1[0] - qc_1_old[0];
+        qc_1_dot[1]     = qc_1[1] - qc_1_old[1];
+        qc_1_dot[2]     = qc_1[2] - qc_1_old[2];
+
+        qc_1_old        = qc_1;
 
 }
 
