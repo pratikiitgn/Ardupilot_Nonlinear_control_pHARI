@@ -309,7 +309,7 @@ float Copter::limit_on_forces_from_quad1(float u)
 float Copter::limit_on_yawrate_for_qpd_from_quad1(float u)
 {
     float max_value = 20.25;
-    if (u < max_value){ u = -max_value;}
+    if (u < -max_value){ u = -max_value;}
     if (u > max_value){ u =  max_value;}
 
     return u;
@@ -353,7 +353,7 @@ void Copter::get_Quad1_CAM1_qpd_Data()
             }
         }
 
-        hal.console->printf("%s\n\n", Quad1POS_CAM1_PAC);
+        // hal.console->printf("%s\n\n", Quad1POS_CAM1_PAC);
 
         for (int i = 0; i < 4; i++)
         {

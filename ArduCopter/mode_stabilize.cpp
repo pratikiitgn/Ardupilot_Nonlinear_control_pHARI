@@ -123,7 +123,6 @@ float ch_8_state    = 0.0;
 // should be called at 100hz or more
 void ModeStabilize::run()
 {
-    pilot_input();
     quad_states();
 
     // apply simple mode transform to pilot inputs
@@ -145,7 +144,7 @@ void ModeStabilize::run()
         motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::SHUT_DOWN);
 
         yaw_initially               = quad_yaw;    // degrees [0 360]
-        human_des_yaw_command       = quad_yaw;    // degrees [0 360]
+        // human_des_yaw_command       = quad_yaw;    // degrees [0 360]
 
         delta_yaw = human_des_yaw_command - PAMD_yaw;
         
@@ -206,10 +205,13 @@ void ModeStabilize::run()
 
     if (ch_8_state > 1500)
     {
-        human_yaw_rate_command = 0.0;
+        human_yaw_rate_command  = H_yaw_des_payload_attitude*1000.0;
     }
 
     human_throttle_command      = pilot_desired_throttle;
+
+    pilot_input();
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////        estimate the required state of the system            ///////////
@@ -371,7 +373,7 @@ void ModeStabilize::run()
     // yaw_desired_vector[1]   = sinf( -(rpy_des[2]/180.0*PI) + (PI/2.0));
     // yaw_desired_vector[2]   = 0.0;
 
-    // hal.console->printf("%3.3f, %3.3f,\n", quad_yaw, human_des_yaw_command);
+    hal.console->printf("%3.3f, %3.3f,\n", quad_yaw, human_des_yaw_command);
 
     error_yaw_vector        = Matrix_vector_mul(hatmap(yaw_current_vector), yaw_desired_vector);
     third_value_of_error_yaw_vector     = error_yaw_vector[2];
