@@ -21,3 +21,5 @@ extern float PAMD_yaw;
 extern Vector3f u2_PAC;
 extern Vector3f u2_CAC2;
 extern Vector3f u2;
+
+extern Vector3f qp_des_from_quad_1;

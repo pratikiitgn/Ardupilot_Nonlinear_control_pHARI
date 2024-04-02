@@ -115,6 +115,8 @@ float delta_yaw     = 0.0;
 
 int print_counter   = 0;
 
+Vector3f qp_des_from_quad_1(1.0,0.0,0.0);
+
 // stabilize_run - runs the main stabilize controller
 // should be called at 100hz or more
 void ModeStabilize::run()
@@ -196,15 +198,17 @@ void ModeStabilize::run()
 
     human_roll_command          = target_roll;
     human_pitch_command         = target_pitch;
+
+    if 
+
     human_yaw_rate_command      = target_yaw_rate;
+
     human_throttle_command      = pilot_desired_throttle;
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////        estimate the required state of the system            ///////////
 //////////////////////////////////////////////////////////////////////////////////
 //////////        filtering the payload attitude and its rate          ///////////
-
-
 
     float qp_1_fil      = limit_on_q(simple_fil_low_pos(5, fil_qp1_array, qp[0]));
     float qp_2_fil      = limit_on_q(simple_fil_low_pos(5, fil_qp2_array, qp[1]));
@@ -269,8 +273,6 @@ void ModeStabilize::run()
     qp_des[0]       = cosf(human_des_yaw_command/180.0*PI);
     qp_des[1]       = sinf(human_des_yaw_command/180.0*PI);
     qp_des[2]       = 0.0;
-
-
 
     // hal.console->printf("%3.3f,",  qp_des[0]);
     // hal.console->printf("%3.3f,",  qp_des[1]);
@@ -618,7 +620,7 @@ float ModeStabilize::norm_of_vector(Vector3f v)
 
 void ModeStabilize::pilot_input()
 {
-    float H_yaw_rate__        = human_yaw_rate_command / 1000.0;
+    float H_yaw_rate__      = human_yaw_rate_command / 1000.0;
     float dt_yaw            = 1.0/100.0;
     human_des_yaw_command   = wrap_360(human_des_yaw_command - H_yaw_rate__*dt_yaw);
 }

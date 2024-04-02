@@ -78,7 +78,6 @@ int QuadCam1qpd_port    = 1;
 int PAMD_device_port    = 2;
 int CAM_device_port     = 4;
 
-Vector3f qp_des_from_quad_1(0.0,0.0,0.0);
 
 //           parameter prefix 
 // UART4  -  SERIAL3_           - GPS      - GPS1
@@ -410,10 +409,10 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         qp_des_from_quad_1[1]          = (float)((qpd_2_int - 5000.0) / 1000.0);
         qp_des_from_quad_1[2]          = (float)((qpd_3_int - 5000.0) / 1000.0);
 
-        hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_POS_1, u1_POS_2, u1_POS_3);
-        hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_CAC_1, u1_CAC_2, u1_CAC_3);
-        hal.console->printf("%2.2f,%2.2f,%2.2f,", u1_PAC_1, u1_PAC_2, u1_PAC_3);
-        hal.console->printf("%2.2f,%2.2f,%2.2f\n", qp_des_from_quad_1[0], qp_des_from_quad_1[1], qp_des_from_quad_1[2]);
+        // hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_POS_1, u1_POS_2, u1_POS_3);
+        // hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_CAC_1, u1_CAC_2, u1_CAC_3);
+        // hal.console->printf("%2.2f,%2.2f,%2.2f,", u1_PAC_1, u1_PAC_2, u1_PAC_3);
+        // hal.console->printf("%2.2f,%2.2f,%2.2f\n", qp_des_from_quad_1[0], qp_des_from_quad_1[1], qp_des_from_quad_1[2]);
 
         u1_POS_1 = limit_on_forces_from_quad1(u1_POS_1);
         u1_POS_2 = limit_on_forces_from_quad1(u1_POS_2);
