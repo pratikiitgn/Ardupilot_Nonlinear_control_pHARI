@@ -13,7 +13,7 @@ float PAMD_yaw      = 0.0;
 
 char cable_attitude[]       = "50000_50000";
 char payload_attitude[]     = "500000_500000&500000";
-char Quad1POS_CAM1_PAC[]    = "5000_5000_5000_5000_5000_5000_5000_5000_5000_5000_5000_5000";
+char Quad1POS_CAM1_PAC[]    = "5000_5000_5000_5000_5000_5000_5000_5000_5000_5000";
 
 char CAM_roll_char[]        = "50000";
 char CAM_pitch_char[]       = "50000";
@@ -353,7 +353,7 @@ void Copter::get_Quad1_CAM1_qpd_Data()
             }
         }
 
-        // hal.console->printf("%s\n\n", Quad1POS_CAM1_PAC);
+        hal.console->printf("%s\n\n", Quad1POS_CAM1_PAC);
 
         for (int i = 0; i < 4; i++)
         {
@@ -430,7 +430,7 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         // hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_POS_1, u1_POS_2, u1_POS_3);
         // hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_CAC_1, u1_CAC_2, u1_CAC_3);
         // hal.console->printf("%3.2f, %3.2f, %3.2f \n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
-        hal.console->printf("%3.2f\n", H_yaw_des_payload_attitude);
+        // hal.console->printf("%3.2f\n", H_yaw_des_payload_attitude);
 
 }
 
