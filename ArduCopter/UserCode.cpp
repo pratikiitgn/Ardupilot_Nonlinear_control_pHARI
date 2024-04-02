@@ -76,11 +76,6 @@ void Copter::userhook_init()
 void Copter::userhook_FastLoop()
 {
     // put your 100Hz code here
-
-    quad_roll        =  (ahrs.roll_sensor)  / 100.0;     // degrees 
-    quad_pitch       = -(ahrs.pitch_sensor) / 100.0;     // degrees 
-    quad_yaw         = 360.0 - (ahrs.yaw_sensor)   / 100.0;     // degrees 
-
     // hal.console->printf("Roll -> %f\n",quad_roll);
 
     get_CAM_device_Data();
