@@ -976,6 +976,7 @@ private:
     void log_attitude_tracking();
     void get_Quad1_CAM1_qpd_Data();
     float limit_on_forces_from_quad1(float u);
+    float limit_on_yawrate_for_qpd_from_quad1(float u);
     void log_TRO1_pos_();
     void log_TRO1_vel_();
     void log_TRO1_hum_();

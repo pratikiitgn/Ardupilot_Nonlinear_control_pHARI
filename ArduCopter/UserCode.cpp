@@ -46,9 +46,7 @@ char u1_PAC_1_char[]    = "5000";
 char u1_PAC_2_char[]    = "5000";
 char u1_PAC_3_char[]    = "5000";
 
-char qpd_1_char[]    = "5000";
-char qpd_2_char[]    = "5000";
-char qpd_3_char[]    = "5000";
+char H_yaw_des_payload_attitude_char[]    = "5000";
 
 int u1_POS_1_int     = 0.0;
 int u1_POS_2_int     = 0.0;
@@ -62,9 +60,7 @@ int u1_PAC_1_int     = 0.0;
 int u1_PAC_2_int     = 0.0;
 int u1_PAC_3_int     = 0.0;
 
-int qpd_1_int        = 0.0;
-int qpd_2_int        = 0.0;
-int qpd_3_int        = 0.0;
+int H_yaw_des_payload_attitude_int        = 0.0;
 
 Vector3f qc_2(0.0,0.0,-1.0);
 Vector3f qc_2_dot(0.0,0.0,0.0);
@@ -310,6 +306,15 @@ float Copter::limit_on_forces_from_quad1(float u)
     return u;
 }
 
+float Copter::limit_on_yawrate_for_qpd_from_quad1(float u)
+{
+    float max_value = 20.25;
+    if (u < max_value){ u = -max_value;}
+    if (u > max_value){ u =  max_value;}
+
+    return u;
+}
+
 void Copter::get_Quad1_CAM1_qpd_Data()
 {
     bool receiving_data = false;
@@ -364,9 +369,7 @@ void Copter::get_Quad1_CAM1_qpd_Data()
             u1_PAC_2_char[i]    = Quad1POS_CAM1_PAC[i+35];
             u1_PAC_3_char[i]    = Quad1POS_CAM1_PAC[i+40];
 
-            qpd_1_char[i]       = Quad1POS_CAM1_PAC[i+45];
-            qpd_2_char[i]       = Quad1POS_CAM1_PAC[i+50];
-            qpd_3_char[i]       = Quad1POS_CAM1_PAC[i+55];
+            H_yaw_des_payload_attitude_char[i]       = Quad1POS_CAM1_PAC[i+45];
         }
 
         // hal.console->printf("%s,%s,%s",   u1_POS_1_char, u1_POS_2_char, u1_POS_3_char);
@@ -385,9 +388,7 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         u1_PAC_2_int    = atoi(u1_PAC_2_char);
         u1_PAC_3_int    = atoi(u1_PAC_3_char);
 
-        qpd_1_int       = atoi(qpd_1_char);
-        qpd_2_int       = atoi(qpd_2_char);
-        qpd_3_int       = atoi(qpd_3_char);
+        H_yaw_des_payload_attitude_int       = atoi(H_yaw_des_payload_attitude_char);
 
         // hal.console->printf("%d,%d,%d,",   u1_POS_1_int, u1_POS_2_int, u1_POS_3_int);
         // hal.console->printf("%d,%d,%d,",   u1_CAC_1_int, u1_CAC_2_int, u1_CAC_3_int);
@@ -405,9 +406,7 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         u1_PAC_2          = (float)((u1_PAC_2_int - 5000.0) / 100.0);
         u1_PAC_3          = (float)((u1_PAC_3_int - 5000.0) / 100.0);
 
-        qp_des_from_quad_1[0]          = (float)((qpd_1_int - 5000.0) / 1000.0);
-        qp_des_from_quad_1[1]          = (float)((qpd_2_int - 5000.0) / 1000.0);
-        qp_des_from_quad_1[2]          = (float)((qpd_3_int - 5000.0) / 1000.0);
+        H_yaw_des_payload_attitude  = (float)((H_yaw_des_payload_attitude_int - 5000.0) / 100.0);
 
         // hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_POS_1, u1_POS_2, u1_POS_3);
         // hal.console->printf("%2.2f,%2.2f,%2.2f,",   u1_CAC_1, u1_CAC_2, u1_CAC_3);
@@ -426,9 +425,12 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         u1_PAC_2 = limit_on_forces_from_quad1(u1_PAC_2);
         u1_PAC_3 = limit_on_forces_from_quad1(u1_PAC_3);
 
+        H_yaw_des_payload_attitude = limit_on_yawrate_for_qpd_from_quad1(H_yaw_des_payload_attitude);
+
         // hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_POS_1, u1_POS_2, u1_POS_3);
         // hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_CAC_1, u1_CAC_2, u1_CAC_3);
         // hal.console->printf("%3.2f, %3.2f, %3.2f \n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
+        hal.console->printf("%3.2f\n", H_yaw_des_payload_attitude);
 
 }
 

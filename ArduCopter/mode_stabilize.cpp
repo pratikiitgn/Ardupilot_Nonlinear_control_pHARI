@@ -115,7 +115,9 @@ float delta_yaw     = 0.0;
 
 int print_counter   = 0;
 
-Vector3f qp_des_from_quad_1(1.0,0.0,0.0);
+float H_yaw_des_payload_attitude = 0.0;
+
+float ch_8_state    = 0.0;
 
 // stabilize_run - runs the main stabilize controller
 // should be called at 100hz or more
@@ -199,9 +201,13 @@ void ModeStabilize::run()
     human_roll_command          = target_roll;
     human_pitch_command         = target_pitch;
 
-    if 
-
+    ch_8_state = RC_Channels::get_radio_in(CH_8);
     human_yaw_rate_command      = target_yaw_rate;
+
+    if (ch_8_state > 1500)
+    {
+        human_yaw_rate_command = 0.0;
+    }
 
     human_throttle_command      = pilot_desired_throttle;
 
