@@ -36,8 +36,6 @@ char u1_data[]          = "12345_67890_12345";
 char CAC1_data[]        = "67890_12345_67890";
 char PAC_data[]         = "59345_56098_59345";
 
-
-
 int u1_POS_1_array[6];
 int u1_POS_2_array[6];
 int u1_POS_3_array[6];
@@ -50,9 +48,8 @@ int u1_PAC_1_array[6];
 int u1_PAC_2_array[6];
 int u1_PAC_3_array[6];
 
-int qpd_1_array[6];
-int qpd_2_array[6];
-int qpd_3_array[6];
+int H_desired_yaw_rate_for_payload_attitude_array[6];
+
 
 //           parameter prefix 
 // UART4  -  SERIAL3_           - GPS      - GPS1       
@@ -324,9 +321,7 @@ void Copter::send_Quad1_CAM1_qpd_Data()
         int u1_PAC_2_scaled         = 5000 + (limit_on_forces_from_PAC(u1_PAC[1]) * 100);
         int u1_PAC_3_scaled         = 5000 + (limit_on_forces_from_PAC(u1_PAC[2]) * 100);
 
-        int qpd_1_scaled            = 5000 + (limit_on_qpd_from_quad1(b_1_c[0]) * 1000);
-        int qpd_2_scaled            = 5000 + (limit_on_qpd_from_quad1(b_1_c[1]) * 1000);
-        int qpd_3_scaled            = 5000 + (limit_on_qpd_from_quad1(b_1_c[2]) * 1000);
+        int H_desired_yaw_rate_for_payload_attitude_scaled     = 5000 + (H_desired_yaw_rate_for_payload_attitude * 100);
 
         for (int i = 3; i >= 0; i--) {
             u1_POS_1_array[i] = u1_pos_1_scaled % 10;
@@ -356,18 +351,12 @@ void Copter::send_Quad1_CAM1_qpd_Data()
             u1_PAC_3_array[i] = u1_PAC_3_scaled % 10;
             u1_PAC_3_scaled /= 10;
 
-            qpd_1_array[i]    = qpd_1_scaled % 10;
-            qpd_1_scaled    /= 10;
+            H_desired_yaw_rate_for_payload_attitude_array[i]    = H_desired_yaw_rate_for_payload_attitude_scaled % 10;
+            H_desired_yaw_rate_for_payload_attitude_scaled    /= 10;
 
-            qpd_2_array[i]    = qpd_2_scaled % 10;
-            qpd_2_scaled    /= 10;
-
-            qpd_3_array[i]    = qpd_3_scaled % 10;
-            qpd_3_scaled    /= 10;
         }
 
         // hal.console->printf("%s, %s, %s \n", u1_POS_1_array, u1_POS_2_array, u1_POS_3_array);
-
 
         hal.serial(QuadCam1qpd_port)->write(",");
         for (int j = 0; j < 4; j++) {
@@ -427,19 +416,7 @@ void Copter::send_Quad1_CAM1_qpd_Data()
 
         hal.serial(QuadCam1qpd_port)->write("_");
         for (int j = 0; j < 4; j++) {
-            hal.serial(QuadCam1qpd_port)->write(convert_Dec_to_Char(qpd_1_array[j]));
-        }
-
-
-        hal.serial(QuadCam1qpd_port)->write("_");
-        for (int j = 0; j < 4; j++) {
-            hal.serial(QuadCam1qpd_port)->write(convert_Dec_to_Char(qpd_2_array[j]));
-        }
-
-
-        hal.serial(QuadCam1qpd_port)->write("_");
-        for (int j = 0; j < 4; j++) {
-            hal.serial(QuadCam1qpd_port)->write(convert_Dec_to_Char(qpd_3_array[j]));
+            hal.serial(QuadCam1qpd_port)->write(convert_Dec_to_Char(H_desired_yaw_rate_for_payload_attitude_array[j]));
         }
 
         hal.serial(QuadCam1qpd_port)->write("/");

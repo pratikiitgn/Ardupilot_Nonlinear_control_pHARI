@@ -22,6 +22,8 @@ extern float human_y_des_command;
 extern float human_z_des_command;
 extern float human_ps_des_dot_command;
 
+extern float H_desired_yaw_rate_for_payload_attitude;
+
 extern float human_xd_dot;
 extern float human_yd_dot;
 extern float human_zd_dot;

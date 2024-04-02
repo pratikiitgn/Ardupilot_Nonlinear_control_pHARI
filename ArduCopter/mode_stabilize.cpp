@@ -17,21 +17,21 @@ Vector3f quad_pos(0.0,0.0,0.0);
 Vector3f quad_vel(0.0,0.0,0.0);
 Vector3f quad_pos_des(0.0,0.0,0.0);
 
-float quad_roll         = 0.0;
-float quad_pitch        = 0.0;
-float quad_yaw          = 0.0;
-float quad_roll_dot     = 0.0;
-float quad_pitch_dot    = 0.0;
-float quad_yaw_dot      = 0.0;
+float quad_roll             = 0.0;
+float quad_pitch            = 0.0;
+float quad_yaw              = 0.0;
+float quad_roll_dot         = 0.0;
+float quad_pitch_dot        = 0.0;
+float quad_yaw_dot          = 0.0;
 
-float quad_yaw_des  = 0.0;
+float quad_yaw_des          = 0.0;
 
 Vector3f rpy_des(0.0,0.0,0.0);
 
-float human_xd_dot      = 0.0;
-float human_yd_dot      = 0.0;
-float human_zd_dot      = 0.0;
-float human_psid_dot      = 0.0;
+float human_xd_dot          = 0.0;
+float human_yd_dot          = 0.0;
+float human_zd_dot          = 0.0;
+float human_psid_dot        = 0.0;
 
 Vector3f qc_1(0.0,0.0,0.0);
 Vector3f qc_2(0.0,0.0,0.0);
@@ -58,8 +58,8 @@ Vector3f u1_PAC(0.0,0.0,0.0);
 Vector3f u1_CAC1(0.0,0.0,0.0);
 Vector3f u1(0.0,0.0,0.0);
 
-float mq                = 1.236;
-float gravity_acc       = 9.81;
+float mq                        = 1.236;
+float gravity_acc               = 9.81;
 
 Vector3f b1_quad(1.0,0.0,0.0);
 Vector3f b_1_des(1.0,0.0,0.0);
@@ -88,17 +88,18 @@ float H_x_dot_command   = 0.0;
 float H_y_dot_command   = 0.0;
 float H_z_dot_command   = 0.0;
 float H_yaw_rate__      = 0.0;
+float H_desired_yaw_rate_for_payload_attitude = 0.0;
 
 ////////////////// PD gains
 
-float kp_x       = 5.0;
-float kd_x       = 3.3;
+float kp_x          = 5.0;
+float kd_x          = 3.3;
 
-float kp_y       = 5.0;
-float kd_y       = 3.3;
+float kp_y          = 5.0;
+float kd_y          = 3.3;
 
-float kp_z       = 12.0;
-float kd_z       = 4.0;
+float kp_z          = 12.0;
+float kd_z          = 4.0;
 
 float kp_qc_1_1     = 3.0;              // 3.0 (two quad best)  // 3.0 (outdoor best)  // 4  (Harness)
 float kd_qc_1_1     = 45.0;             // 45 (two quad best)  // 45.0 (outdoor best)  // 45 (Harness)
@@ -109,8 +110,12 @@ float kd_qc_1_2     = 45.0;             // 45 (two quad best)  // 45.0 (outdoor 
 float kp_qc_1_3     = 0.0;        //
 float kd_qc_1_3     = 0.0;        //  
 
-int arming_state_variable = 0;
-float ch_6_state = 0.0;
+int arming_state_variable   = 0;
+float ch_6_state            = 0.0;
+float ch_8_state            = 0.0;
+
+
+
 /*
  * Init and run calls for stabilize flight mode
  */
@@ -124,6 +129,8 @@ void ModeStabilize::run()
     quad_states();
 
     ch_6_state = RC_Channels::get_radio_in(CH_6);
+    ch_8_state = RC_Channels::get_radio_in(CH_8);
+
     // hal.console->printf("%2.3f\n", ch_6_state);
 
     if (ch_6_state < 1500.0)
@@ -194,7 +201,6 @@ void ModeStabilize::run()
         break;
     }
 
-
 //////////////////////////////////////////////////////////////////////////////////
 /////////////////////        Human commands              /////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
@@ -207,7 +213,6 @@ void ModeStabilize::run()
     human_pitch_command         = target_pitch;
     human_yaw_rate_command      = target_yaw_rate;
     human_throttle_command      = pilot_desired_throttle;
-
 
 //////////        filtering the cable attitude and its rate          ///////////
 
@@ -388,7 +393,9 @@ void ModeStabilize::run()
 
 void ModeStabilize::pilot_input_command()
 {
-    H_yaw_rate__      = human_yaw_rate_command / 1000.0;      // -20.25 to 20.25
+    H_yaw_rate__            = human_yaw_rate_command / 1000.0;      // -20.25 to 20.25
+    H_desired_yaw_rate_for_payload_attitude = human_yaw_rate_command / 1000.0;      // -20.25 to 20.25
+
     float dt_yaw            = 1.0/100.0;
     human_des_yaw_command   = wrap_360(human_des_yaw_command - H_yaw_rate__*dt_yaw);
     // float offsetted_val_yaw = 1.0;
