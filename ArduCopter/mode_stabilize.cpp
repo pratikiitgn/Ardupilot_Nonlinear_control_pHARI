@@ -458,6 +458,27 @@ void ModeStabilize::run()
 
 }
 
+void ModeStabilize::quad_states(){
+
+    // position in body reference frame
+    quad2_pos[0] =  inertial_nav.get_position_neu_cm().x / 100.0;
+    quad2_pos[1] =  -inertial_nav.get_position_neu_cm().y / 100.0;
+    quad2_pos[2] =  inertial_nav.get_position_neu_cm().z / 100.0;
+
+    // linear velocity in inertial frame of reference
+    quad2_vel[0] =  inertial_nav.get_velocity_neu_cms().x /100.0;
+    quad2_vel[1] =  -inertial_nav.get_velocity_neu_cms().y /100.0;
+    quad2_vel[2] =  inertial_nav.get_velocity_neu_cms().z /100.0;
+
+    quad_roll        =        (ahrs.roll_sensor)  / 100.0;     // degrees 
+    quad_pitch       =       -(ahrs.pitch_sensor) / 100.0;     // degrees 
+    quad_yaw         =  360.0-(ahrs.yaw_sensor)   / 100.0;     // degrees 
+    quad_roll_dot    =        (ahrs.get_gyro().x);             // degrees/second
+    quad_pitch_dot   =       -(ahrs.get_gyro().y);             // degrees/second    
+    quad_yaw_dot     =       -(ahrs.get_gyro().z);             // degrees/second
+
+}
+
 float ModeStabilize::simple_fil_low_pos(int iteration, float array[], float current_value)
 {
     for (int h = iteration-1; h >= 0; h--)
@@ -594,19 +615,6 @@ float ModeStabilize::norm_of_vector(Vector3f v)
     return sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 }
 
-void ModeStabilize::quad_states(){
-    // Position in inertial reference frame
-    // inertial_nav.get_position_neu_cm().x;
-    inertial_nav.get_velocity_neu_cms().x;
-
-    quad_roll        =  (ahrs.roll_sensor)  / 100.0;     // degrees 
-    quad_pitch       = -(ahrs.pitch_sensor) / 100.0;     // degrees 
-    quad_yaw         =  360.0-(ahrs.yaw_sensor)   / 100.0;     // degrees 
-    quad_roll_dot    =   (ahrs.get_gyro().x);             // degrees/second
-    quad_pitch_dot   =  -(ahrs.get_gyro().y);             // degrees/second    
-    quad_yaw_dot     =  -(ahrs.get_gyro().z);             // degrees/second
-
-}
 
 void ModeStabilize::pilot_input()
 {
