@@ -360,7 +360,7 @@ void ModeStabilize::run()
     // hal.console->printf("%3.3f \n", u2_scaled);
 
 /////////////////////        yaw angle controller        /////////////////////////
-
+    
     yaw_current_vector[0]   = cosf((PI/2.0) - (quad_yaw/180.0*PI));
     yaw_current_vector[1]   = sinf((PI/2.0) - (quad_yaw/180.0*PI));
     yaw_current_vector[2]   = 0.0;
