@@ -373,7 +373,7 @@ void ModeStabilize::run()
     // yaw_desired_vector[1]   = sinf( -(rpy_des[2]/180.0*PI) + (PI/2.0));
     // yaw_desired_vector[2]   = 0.0;
 
-    hal.console->printf("%3.3f, %3.3f,\n", quad_yaw, human_des_yaw_command);
+    // hal.console->printf("%3.3f, %3.3f,\n", quad_yaw, human_des_yaw_command);
 
     error_yaw_vector        = Matrix_vector_mul(hatmap(yaw_current_vector), yaw_desired_vector);
     third_value_of_error_yaw_vector     = error_yaw_vector[2];
