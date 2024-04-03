@@ -248,6 +248,9 @@ void ModeStabilize::run()
     u1_CAC1[1]      =  kp_qc_1_2 * eqc_1[1] + kd_qc_1_2 * eqc_1_dot[1];
     u1_CAC1[2]      =  kp_qc_1_3 * eqc_1[2] + kd_qc_1_3 * eqc_1_dot[2];
 
+    u1_CAC1[0]      = 0.0;
+    u1_CAC1[1]      = 0.0;
+    u1_CAC1[2]      = 0.0;
 
 /////////////////////        Quad 1 position controller        /////////////////////////
 
