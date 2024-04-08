@@ -218,13 +218,13 @@ void ModeStabilize::run()
 //////////////////////////////////////////////////////////////////////////////////
 //////////        filtering the payload attitude and its rate          ///////////
 
-    float qp_1_fil      = limit_on_q(simple_fil_low_pos(5, fil_qp1_array, qp[0]));
-    float qp_2_fil      = limit_on_q(simple_fil_low_pos(5, fil_qp2_array, qp[1]));
-    float qp_3_fil      = limit_on_q(simple_fil_low_pos(5, fil_qp3_array, qp[2]));
+    float qp_1_fil      = limit_on_q(simple_fil_low_pos(2, fil_qp1_array, qp[0]));
+    float qp_2_fil      = limit_on_q(simple_fil_low_pos(2, fil_qp2_array, qp[1]));
+    float qp_3_fil      = limit_on_q(simple_fil_low_pos(2, fil_qp3_array, qp[2]));
 
-    float qp_1_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qp1_dot_array, qp_dot[0]));
-    float qp_2_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qp2_dot_array, qp_dot[1]));
-    float qp_3_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qp3_dot_array, qp_dot[2]));
+    float qp_1_dot_fil  = limit_on_q_dot(simple_fil_low_pos(2, fil_qp1_dot_array, qp_dot[0]));
+    float qp_2_dot_fil  = limit_on_q_dot(simple_fil_low_pos(2, fil_qp2_dot_array, qp_dot[1]));
+    float qp_3_dot_fil  = limit_on_q_dot(simple_fil_low_pos(2, fil_qp3_dot_array, qp_dot[2]));
 
 //////////        filtering the payload attitude and its rate          ///////////
 
