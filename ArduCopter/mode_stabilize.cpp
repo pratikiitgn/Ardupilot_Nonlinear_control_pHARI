@@ -96,7 +96,7 @@ float kd_qp_2       = 16.0;             // 16.0 (two quad best)  // 13.0 (outdoo
 // float ki_qp_2    = 0.0;
 
 float kp_qp_3       = 12.0;             // 12.0 (two quad best) // 12.0 (outdoor best) //  12  (best 2, harness)     18.0     (best)
-float kd_qp_3       = 130.0;            // 130 (two quad best)  // 120.0 (outdoor best)  //  120 (best 2, harness)     100.0    (best)
+float kd_qp_3       = 150.0;            // 130 (two quad best)  // 120.0 (outdoor best)  //  120 (best 2, harness)     100.0    (best)
 // float ki_qp_3
 
 float kp_qc_2_1     = 3.0;              // 3.0 (two quad best)  // 3.0 (outdoor best)  // 4  (Harness)

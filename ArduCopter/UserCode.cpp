@@ -428,10 +428,10 @@ void Copter::get_Quad1_CAM1_qpd_Data()
 
         H_yaw_des_payload_attitude = limit_on_yawrate_for_qpd_from_quad1(H_yaw_des_payload_attitude);
 
-        // hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_POS_1, u1_POS_2, u1_POS_3);
-        // hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_CAC_1, u1_CAC_2, u1_CAC_3);
-        // hal.console->printf("%3.2f, %3.2f, %3.2f \n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
-        // hal.console->printf("%3.2f\n", H_yaw_des_payload_attitude);
+        hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_POS_1, u1_POS_2, u1_POS_3);
+        hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_CAC_1, u1_CAC_2, u1_CAC_3);
+        hal.console->printf("%3.2f, %3.2f, %3.2f \n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
+        hal.console->printf("%3.2f\n", H_yaw_des_payload_attitude);
 
 }
 
