@@ -736,6 +736,12 @@ struct PACKED log_Human_QPD_ {
     float  qpd_3;
 };
 
+struct PACKED log_EXP_STP_ {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    int exp_stp;
+};
+
 // FMT messages define all message formats other than FMT
 // UNIT messages define units which can be referenced by FMTU messages
 // FMTU messages associate types (e.g. centimeters/second/second) to FMT message fields
@@ -1387,6 +1393,8 @@ LOG_STRUCTURE_FROM_VISUALODOM \
       "HCMD",   "Qffff", "TimeUS,xddot,yddot,zddot, psiddot", "s----", "F----", true }, \
     { LOG_HUMN_QPD_MSG, sizeof(log_Human_QPD_), \
       "HQPD",   "Qfff", "TimeUS,qpd_1,qpd_2,qpd_3", "s---", "F---", true }, \
+    { LOG_EXPE_STP_MSG, sizeof(log_EXP_STP_), \
+      "ESTP",   "Qi", "TimeUS,exp_stp", "s-", "F-", true }, \
 LOG_STRUCTURE_FROM_AIS \
     { LOG_SCRIPTING_MSG, sizeof(log_Scripting), \
       "SCR",   "QNIii", "TimeUS,Name,Runtime,Total_mem,Run_mem", "s#sbb", "F-F--", true }, \
@@ -1488,6 +1496,7 @@ enum LogMessages : uint8_t {
     LOG_CABL_DOT_MSG,
     LOG_HUMN_CMD_MSG,
     LOG_HUMN_QPD_MSG,
+    LOG_EXPE_STP_MSG,
     _LOG_LAST_MSG_
 };
 

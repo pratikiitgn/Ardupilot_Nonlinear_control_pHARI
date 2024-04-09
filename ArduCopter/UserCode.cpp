@@ -52,6 +52,11 @@ int H_desired_yaw_rate_for_payload_attitude_array[6];
 
 Vector3f qc_1_old(0.0,0.0,0.0);
 
+int flag_exp_start_stop = 0;
+int flag_exp_start_stop_array[1];
+char flag_exp_start_stop_data[] = "0";
+
+
 //           parameter prefix
 // UART4  -  SERIAL3_           - GPS      - GPS1
 // UART8 -   SERIAL4_           - SERIAL4  - GPS2
@@ -93,6 +98,8 @@ void Copter::userhook_FastLoop()
     Log_cable_1_attitude_dot_data();    // log_Cab1_ATT_dot_    | LOG_CABL_DOT_MSG  |   CDOT
     Log_Human_command_data_data();      // log_Human_CMD_       | LOG_HUMN_CMD_MSG  |   HCMD
     Log_Human_qpd_from_quad1();         // log_Human_QPD_       | LOG_HUMN_QPD_MSG  |   HQPD
+    Log_experiment_start_stop();        // log_EXP_STP_         | LOG_EXPE_STP_MSG  |   ESTP
+
 
 }
 #endif
@@ -322,9 +329,9 @@ void Copter::send_Quad1_CAM1_qpd_Data()
         int u1_PAC_2_scaled         = 5000 + (limit_on_forces_from_PAC(u1_PAC[1]) * 100);
         int u1_PAC_3_scaled         = 5000 + (limit_on_forces_from_PAC(u1_PAC[2]) * 100);
 
-
-
         int H_desired_yaw_rate_for_payload_attitude_scaled     = 5000 + (H_desired_yaw_rate_for_payload_attitude * 100);
+
+        int flag_exp_start_stop_scaled = flag_exp_start_stop;
 
         // hal.console->printf("%3.2f\n", H_desired_yaw_rate_for_payload_attitude);
 
@@ -358,6 +365,8 @@ void Copter::send_Quad1_CAM1_qpd_Data()
 
             H_desired_yaw_rate_for_payload_attitude_array[i]    = H_desired_yaw_rate_for_payload_attitude_scaled % 10;
             H_desired_yaw_rate_for_payload_attitude_scaled    /= 10;
+
+            flag_exp_start_stop_array[0]                        = flag_exp_start_stop_scaled;
 
         }
 
@@ -423,6 +432,10 @@ void Copter::send_Quad1_CAM1_qpd_Data()
         for (int j = 0; j < 4; j++) {
             hal.serial(QuadCam1qpd_port)->write(convert_Dec_to_Char(H_desired_yaw_rate_for_payload_attitude_array[j]));
         }
+
+        hal.serial(QuadCam1qpd_port)->write("_");
+        
+        hal.serial(QuadCam1qpd_port)->write(convert_Dec_to_Char(flag_exp_start_stop_array[0]));
 
         hal.serial(QuadCam1qpd_port)->write("/");
         hal.serial(QuadCam1qpd_port)->write("\n");
@@ -720,6 +733,16 @@ void Copter::Log_Human_qpd_from_quad1()
     qpd_1    : b_1_c[0],
     qpd_2    : b_1_c[1],
     qpd_3    : b_1_c[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_experiment_start_stop()
+{
+    struct log_EXP_STP_ pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_EXPE_STP_MSG),
+    time_us  : AP_HAL::micros64(),
+    exp_stp  : flag_exp_start_stop,
     };
     logger.WriteBlock(&pkt, sizeof(pkt));
 }

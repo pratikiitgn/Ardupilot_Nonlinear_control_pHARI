@@ -1016,6 +1016,7 @@ private:
     void Log_Human_command_data_data();
     void Log_quad_pos_des_data();
     void Log_Human_qpd_from_quad1();
+    void Log_experiment_start_stop();
 
 
 #if MODE_ACRO_ENABLED == ENABLED

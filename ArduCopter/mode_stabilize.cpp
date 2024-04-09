@@ -152,7 +152,7 @@ void ModeStabilize::run()
 
     // get pilot's desired yaw rate
     float target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->norm_input_dz());
-    
+
     float pilot_desired_throttle = get_pilot_desired_throttle();
 
     // hal.console->printf("%3.3f,",  qp[0]);
@@ -216,18 +216,18 @@ void ModeStabilize::run()
 
 //////////        filtering the cable attitude and its rate          ///////////
 
-    float qc_1_1_fil    = limit_on_q(simple_fil_low_pos(5, fil_qc_11_array, qc_1[0]));
-    float qc_1_2_fil    = limit_on_q(simple_fil_low_pos(5, fil_qc_12_array, qc_1[1]));
-    float qc_1_3_fil    = limit_on_q(simple_fil_low_pos(5, fil_qc_13_array, qc_1[2]));
+    float qc_1_1_fil    = limit_on_q(simple_fil_low_pos(10, fil_qc_11_array, qc_1[0]));
+    float qc_1_2_fil    = limit_on_q(simple_fil_low_pos(10, fil_qc_12_array, qc_1[1]));
+    float qc_1_3_fil    = limit_on_q(simple_fil_low_pos(10, fil_qc_13_array, qc_1[2]));
 
-    float qc_1_1_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qc_11_dot_array, qc_1_dot[0]));
-    float qc_1_2_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qc_12_dot_array, qc_1_dot[1]));
-    float qc_1_3_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qc_13_dot_array, qc_1_dot[2]));
+    float qc_1_1_dot_fil  = limit_on_q_dot(simple_fil_low_pos(10, fil_qc_11_dot_array, qc_1_dot[0]));
+    float qc_1_2_dot_fil  = limit_on_q_dot(simple_fil_low_pos(10, fil_qc_12_dot_array, qc_1_dot[1]));
+    float qc_1_3_dot_fil  = limit_on_q_dot(simple_fil_low_pos(10, fil_qc_13_dot_array, qc_1_dot[2]));
 
-    // hal.console->printf("%3.3f,",   qc_2_1_fil);
+    hal.console->printf("%3.3f,",   qc_1_1_fil);
     // hal.console->printf("%3.3f,",   qc_2_2_fil);
     // hal.console->printf("%3.3f\n",  qp_3_fil);
-    // hal.console->printf("%3.3f\n",  100*qc_2_1_dot_fil);
+    hal.console->printf("%3.3f\n",  100*qc_1_1_dot_fil);
     // hal.console->printf("%3.3f\n",  100*qc_2_2_dot_fil);
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -258,7 +258,7 @@ void ModeStabilize::run()
 
 /////////////////////        Quad 1 position controller        /////////////////////////
 
-    hal.console->printf("%2.3f,%2.3f\n", u1_CAC1[0], u1_CAC1[1]);
+    // hal.console->printf("%2.3f,%2.3f\n", u1_CAC1[0], u1_CAC1[1]);
     // hal.console->printf("%2.3f,%2.3f\n",  quad_pos[1], quad_pos_des[1]);
     // hal.console->printf("%2.3f,%2.3f\n",quad_pos[2],quad_pos_des[2]);
 
