@@ -241,20 +241,24 @@ void ModeStabilize::run()
     qc_1_dot_fil[1] = qc_1_2_dot_fil;
     qc_1_dot_fil[2] = qc_1_3_dot_fil;
 
+    // hal.console->printf("%2.3f,%2.3f\n", eqc_1[0], eqc_1[1]);
+
     eqc_1           = Matrix_vector_mul(hatmap(qc_1_fil), Matrix_vector_mul(hatmap(qc_1_fil), qc_1_des));
     eqc_1_dot       = qc_1_dot_fil;
+
+    // hal.console->printf("%2.3f,%2.3f\n", eqc_1_dot[0], eqc_1_dot[1]);
 
     u1_CAC1[0]      =  kp_qc_1_1 * eqc_1[0] + kd_qc_1_1 * eqc_1_dot[0];
     u1_CAC1[1]      =  kp_qc_1_2 * eqc_1[1] + kd_qc_1_2 * eqc_1_dot[1];
     u1_CAC1[2]      =  kp_qc_1_3 * eqc_1[2] + kd_qc_1_3 * eqc_1_dot[2];
 
-    u1_CAC1[0]      = 0.0;
-    u1_CAC1[1]      = 0.0;
-    u1_CAC1[2]      = 0.0;
+    // u1_CAC1[0]      = 0.0;
+    // u1_CAC1[1]      = 0.0;
+    // u1_CAC1[2]      = 0.0;
 
 /////////////////////        Quad 1 position controller        /////////////////////////
 
-    // hal.console->printf("%2.3f,%2.3f\n", u1_CAC1[0], u1_CAC1[1]);
+    hal.console->printf("%2.3f,%2.3f\n", u1_CAC1[0], u1_CAC1[1]);
     // hal.console->printf("%2.3f,%2.3f\n",  quad_pos[1], quad_pos_des[1]);
     // hal.console->printf("%2.3f,%2.3f\n",quad_pos[2],quad_pos_des[2]);
 

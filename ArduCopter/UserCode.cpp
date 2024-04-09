@@ -488,8 +488,8 @@ void Copter::get_CAM_device_Data()
         CAM_roll  =  (float)((encoder_roll_int  - 50000.0) / 100.0);
         CAM_pitch =  (float)((encoder_pitch_int - 50000.0) / 100.0); 
 
-        hal.console->printf("%3.3f,", CAM_roll);
-        hal.console->printf("%3.3f\n", CAM_pitch);
+        // hal.console->printf("%3.3f,", CAM_roll);
+        // hal.console->printf("%3.3f\n", CAM_pitch);
 
         if (CAM_roll > 60.0){
             CAM_roll = 60.0;
