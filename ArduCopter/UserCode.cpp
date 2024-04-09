@@ -86,6 +86,21 @@ void Copter::userhook_FastLoop()
     send_Quad1_CAM1_qpd_Data();
     // hal.console->printf("Hi Pratik from Ardupilot \n");
 
+    int ch_8_state = RC_Channels::get_radio_in(CH_8);
+
+    if (ch_8_state > 1500)
+    {
+        flag_exp_start_stop  = 1;
+    }
+
+    if (ch_8_state < 1000)
+    {
+        flag_exp_start_stop  = 0;
+    }
+
+    // hal.console->printf("%d\n",flag_exp_start_stop);
+
+
     //////////////////// Log the data
     ////////////////////////////////////////
 

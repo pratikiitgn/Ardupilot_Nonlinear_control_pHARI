@@ -224,10 +224,10 @@ void ModeStabilize::run()
     float qc_1_2_dot_fil  = limit_on_q_dot(simple_fil_low_pos(10, fil_qc_12_dot_array, qc_1_dot[1]));
     float qc_1_3_dot_fil  = limit_on_q_dot(simple_fil_low_pos(10, fil_qc_13_dot_array, qc_1_dot[2]));
 
-    hal.console->printf("%3.3f,",   qc_1_1_fil);
+    // hal.console->printf("%3.3f,",   qc_1_1_fil);
     // hal.console->printf("%3.3f,",   qc_2_2_fil);
     // hal.console->printf("%3.3f\n",  qp_3_fil);
-    hal.console->printf("%3.3f\n",  100*qc_1_1_dot_fil);
+    // hal.console->printf("%3.3f\n",  100*qc_1_1_dot_fil);
     // hal.console->printf("%3.3f\n",  100*qc_2_2_dot_fil);
 
 //////////////////////////////////////////////////////////////////////////////////
