@@ -1019,6 +1019,7 @@ private:
     void Log_u2_CAC2_follower();
     void Log_u2_follower();
     void Log_qp_des_from_follower();
+    void Log_Exp_start_stop();
 
 #if MODE_ACRO_ENABLED == ENABLED
 #if FRAME_CONFIG == HELI_FRAME

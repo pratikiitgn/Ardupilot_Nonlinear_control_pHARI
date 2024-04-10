@@ -13,7 +13,7 @@ float PAMD_yaw      = 0.0;
 
 char cable_attitude[]       = "50000_50000";
 char payload_attitude[]     = "500000_500000&500000";
-char Quad1POS_CAM1_PAC[]    = "5000_5000_5000_5000_5000_5000_5000_5000_5000_5000";
+char Quad1POS_CAM1_PAC[]    = "5000_5000_5000_5000_5000_5000_5000_5000_5000_5000_0";
 
 char CAM_roll_char[]        = "50000";
 char CAM_pitch_char[]       = "50000";
@@ -48,6 +48,8 @@ char u1_PAC_3_char[]    = "5000";
 
 char H_yaw_des_payload_attitude_char[]    = "5000";
 
+char flag_start_stop_char[]  = "0";
+
 int u1_POS_1_int     = 0.0;
 int u1_POS_2_int     = 0.0;
 int u1_POS_3_int     = 0.0;
@@ -61,6 +63,7 @@ int u1_PAC_2_int     = 0.0;
 int u1_PAC_3_int     = 0.0;
 
 int H_yaw_des_payload_attitude_int        = 0.0;
+int flag_start_stop_int = 0;
 
 Vector3f qc_2(0.0,0.0,-1.0);
 Vector3f qc_2_dot(0.0,0.0,0.0);
@@ -117,6 +120,7 @@ void Copter::userhook_FastLoop()
     Log_u2_CAC2_follower();                         // log_u2_CAC2          | LOG_U2_CAC2_MSG   |   U2C2
     Log_u2_follower();                              // log_u2_              | LOG_U2_MSG        |   U2U2
     Log_qp_des_from_follower();                     // log_qp_des_          | LOG_QP_DES_MSG    |   QPDD
+    Log_Exp_start_stop();                           // log_exp_st_sp        | LOG_EXP_STP_MSG   |   EXSP      
 
 }
 #endif
@@ -371,6 +375,7 @@ void Copter::get_Quad1_CAM1_qpd_Data()
             u1_PAC_3_char[i]    = Quad1POS_CAM1_PAC[i+40];
 
             H_yaw_des_payload_attitude_char[i]       = Quad1POS_CAM1_PAC[i+45];
+            flag_start_stop_char[0]    = Quad1POS_CAM1_PAC[50];
         }
 
         // hal.console->printf("%s,%s,%s",   u1_POS_1_char, u1_POS_2_char, u1_POS_3_char);
@@ -391,9 +396,13 @@ void Copter::get_Quad1_CAM1_qpd_Data()
 
         H_yaw_des_payload_attitude_int       = atoi(H_yaw_des_payload_attitude_char);
 
+        flag_start_stop_int                  = atoi(flag_start_stop_char);
+
+
         // hal.console->printf("%d,%d,%d,",   u1_POS_1_int, u1_POS_2_int, u1_POS_3_int);
         // hal.console->printf("%d,%d,%d,",   u1_CAC_1_int, u1_CAC_2_int, u1_CAC_3_int);
         // hal.console->printf("%d,%d,%d,", u1_PAC_1_int, u1_PAC_2_int, u1_PAC_3_int);
+        // hal.console->printf("%d\n",   flag_start_stop_int);
 
         u1_POS_1          = (float)((u1_POS_1_int - 5000.0) / 100.0);
         u1_POS_2          = (float)((u1_POS_2_int - 5000.0) / 100.0);
@@ -428,10 +437,10 @@ void Copter::get_Quad1_CAM1_qpd_Data()
 
         H_yaw_des_payload_attitude = limit_on_yawrate_for_qpd_from_quad1(H_yaw_des_payload_attitude);
 
-        hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_POS_1, u1_POS_2, u1_POS_3);
-        hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_CAC_1, u1_CAC_2, u1_CAC_3);
-        hal.console->printf("%3.2f, %3.2f, %3.2f \n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
-        hal.console->printf("%3.2f\n", H_yaw_des_payload_attitude);
+        // hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_POS_1, u1_POS_2, u1_POS_3);
+        // hal.console->printf("%3.2f, %3.2f, %3.2f,  ", u1_CAC_1, u1_CAC_2, u1_CAC_3);
+        // hal.console->printf("%3.2f, %3.2f, %3.2f \n", u1_PAC_1, u1_PAC_2, u1_PAC_3);
+        // hal.console->printf("%3.2f\n", H_yaw_des_payload_attitude);
 
 }
 
@@ -793,6 +802,16 @@ void Copter::Log_qp_des_from_follower()
     qpdes_1_log : qp_des[0],
     qpdes_2_log : qp_des[1],
     qpdes_3_log : qp_des[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_Exp_start_stop()
+{
+    struct log_exp_st_sp pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_EXP_STP_MSG),
+    time_us  : AP_HAL::micros64(),
+    exp_stp_st : flag_start_stop_int,
     };
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
