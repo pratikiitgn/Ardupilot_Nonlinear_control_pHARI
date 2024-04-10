@@ -216,13 +216,13 @@ void ModeStabilize::run()
 
 //////////        filtering the cable attitude and its rate          ///////////
 
-    float qc_1_1_fil    = limit_on_q(simple_fil_low_pos(10, fil_qc_11_array, qc_1[0]));
-    float qc_1_2_fil    = limit_on_q(simple_fil_low_pos(10, fil_qc_12_array, qc_1[1]));
-    float qc_1_3_fil    = limit_on_q(simple_fil_low_pos(10, fil_qc_13_array, qc_1[2]));
+    float qc_1_1_fil    = limit_on_q(simple_fil_low_pos(5, fil_qc_11_array, qc_1[0]));
+    float qc_1_2_fil    = limit_on_q(simple_fil_low_pos(5, fil_qc_12_array, qc_1[1]));
+    float qc_1_3_fil    = limit_on_q(simple_fil_low_pos(5, fil_qc_13_array, qc_1[2]));
 
-    float qc_1_1_dot_fil  = limit_on_q_dot(simple_fil_low_pos(10, fil_qc_11_dot_array, qc_1_dot[0]));
-    float qc_1_2_dot_fil  = limit_on_q_dot(simple_fil_low_pos(10, fil_qc_12_dot_array, qc_1_dot[1]));
-    float qc_1_3_dot_fil  = limit_on_q_dot(simple_fil_low_pos(10, fil_qc_13_dot_array, qc_1_dot[2]));
+    float qc_1_1_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qc_11_dot_array, qc_1_dot[0]));
+    float qc_1_2_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qc_12_dot_array, qc_1_dot[1]));
+    float qc_1_3_dot_fil  = limit_on_q_dot(simple_fil_low_pos(5, fil_qc_13_dot_array, qc_1_dot[2]));
 
     // hal.console->printf("%3.3f,",   qc_1_1_fil);
     // hal.console->printf("%3.3f,",   qc_2_2_fil);
@@ -252,9 +252,9 @@ void ModeStabilize::run()
     u1_CAC1[1]      =  kp_qc_1_2 * eqc_1[1] + kd_qc_1_2 * eqc_1_dot[1];
     u1_CAC1[2]      =  kp_qc_1_3 * eqc_1[2] + kd_qc_1_3 * eqc_1_dot[2];
 
-    // u1_CAC1[0]      = 0.0;
-    // u1_CAC1[1]      = 0.0;
-    // u1_CAC1[2]      = 0.0;
+    u1_CAC1[0]      = 0.0;
+    u1_CAC1[1]      = 0.0;
+    u1_CAC1[2]      = 0.0;
 
 /////////////////////        Quad 1 position controller        /////////////////////////
 
@@ -402,6 +402,7 @@ void ModeStabilize::pilot_input_command()
 {
     H_yaw_rate__            = human_yaw_rate_command / 1000.0;      // -20.25 to 20.25
     H_desired_yaw_rate_for_payload_attitude = human_yaw_rate_command / 1000.0;      // -20.25 to 20.25
+    H_desired_yaw_rate_for_payload_attitude = 0.5 * H_desired_yaw_rate_for_payload_attitude;
 
     float dt_yaw            = 1.0/100.0;
     human_des_yaw_command   = wrap_360(human_des_yaw_command - H_yaw_rate__*dt_yaw);
