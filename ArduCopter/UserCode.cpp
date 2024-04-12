@@ -115,7 +115,6 @@ void Copter::userhook_FastLoop()
     Log_Human_qpd_from_quad1();         // log_Human_QPD_       | LOG_HUMN_QPD_MSG  |   HQPD
     Log_experiment_start_stop();        // log_EXP_STP_         | LOG_EXPE_STP_MSG  |   ESTP
 
-
 }
 #endif
 
@@ -563,6 +562,10 @@ void Copter::get_CAM_device_Data()
 
         qc_1 = Matrix_vector_mul(R,Matrix_vector_mul(CAM_R_x,Matrix_vector_mul(CAM_R_y,e_3_neg)));
         qc_1 = sat_q(qc_1);
+
+        // hal.console->printf("%3.3f,", qc_1[0]);
+        // hal.console->printf("%3.3f,", qc_1[1]);
+        // hal.console->printf("%3.3f\n", qc_1[2]);
 
         qc_1_dot[0]     = qc_1[0] - qc_1_old[0];
         qc_1_dot[1]     = qc_1[1] - qc_1_old[1];
