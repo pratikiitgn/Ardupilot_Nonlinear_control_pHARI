@@ -77,7 +77,6 @@ int QuadCam1qpd_port    = 1;
 int PAMD_device_port    = 2;
 int CAM_device_port     = 4;
 
-
 //           parameter prefix 
 // UART4  -  SERIAL3_           - GPS      - GPS1
 // UART8  -  SERIAL4_           - SERIAL4  - GPS2
@@ -395,9 +394,7 @@ void Copter::get_Quad1_CAM1_qpd_Data()
         u1_PAC_3_int    = atoi(u1_PAC_3_char);
 
         H_yaw_des_payload_attitude_int       = atoi(H_yaw_des_payload_attitude_char);
-
         flag_start_stop_int                  = atoi(flag_start_stop_char);
-
 
         // hal.console->printf("%d,%d,%d,",   u1_POS_1_int, u1_POS_2_int, u1_POS_3_int);
         // hal.console->printf("%d,%d,%d,",   u1_CAC_1_int, u1_CAC_2_int, u1_CAC_3_int);
@@ -557,6 +554,9 @@ void Copter::get_CAM_device_Data()
         qc_2_dot[2]     = qc_2[2] - qc_2_old[2];
 
         qc_2_old        = qc_2;
+
+
+
 }
 
 Vector3f Copter::Matrix_vector_mul(Matrix3f R, Vector3f v){

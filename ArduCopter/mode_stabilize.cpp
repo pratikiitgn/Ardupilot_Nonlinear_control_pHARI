@@ -206,6 +206,7 @@ void ModeStabilize::run()
     if (ch_8_state > 1500)
     {
         human_yaw_rate_command  = H_yaw_des_payload_attitude*1000.0;
+        human_yaw_rate_command  = -human_yaw_rate_command/2.0;
     }
 
     human_throttle_command      = pilot_desired_throttle;
