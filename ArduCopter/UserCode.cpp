@@ -269,6 +269,10 @@ void Copter::get_PAMD_device_Data()
         Vector3f e_1(1.0,0,0.0);
         qp = Matrix_vector_mul(R_payload,e_1);
 
+        // hal.console->printf("%3.3f,", qp[0]);
+        // hal.console->printf("%3.3f,", qp[1]);
+        // hal.console->printf("%3.3f\n", qp[2]);
+
         // float constant_orientation = -PI/2.0;
         // Matrix3f R_z_plus_90_deg(
         //        cosf(constant_orientation),   -sinf(constant_orientation),      0,
