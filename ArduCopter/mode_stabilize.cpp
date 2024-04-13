@@ -372,6 +372,7 @@ void ModeStabilize::run()
     TRO_target_roll_angle     = phi_fil;                                //  [-45 45] degrees
     TRO_target_pitch_angle    = -theta_fil;                              //  [-45 45] degrees
     TRO_target_yaw_rate       = 20.0 * third_value_of_error_yaw_vector + 3.0 * third_value_of_error_yaw_vector_dot_fil;     //  [-20 20] degrees/sec
+    TRO_target_yaw_rate       = TRO_target_yaw_rate/2.0;
     // TRO_target_yaw_rate       = human_yaw_rate_command/1000.0;       //  [-20 20] degrees/sec    
 
     // TRO_target_throttle       = 0.0;                                    //  [0 1] 0.38 - is for hovering condition almost
