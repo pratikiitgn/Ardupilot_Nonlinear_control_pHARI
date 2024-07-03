@@ -986,7 +986,9 @@ private:
     void log_TRO1_PWM_();
     void log_TRO1_FM_();
     void get_CAM_device_Data();
-    void get_PAMD_device_Data();
+    void get_HHD_attitude_data();
+    void get_HHD_Acceleration_data();
+    void get_HHD_Encoders_Data();
     void gains_data_from_Rpi();
     void Portenta_data();
     void getHumanIMUdata();
@@ -1018,7 +1020,7 @@ private:
     void Log_u2_PAC_follower();
     void Log_u2_CAC2_follower();
     void Log_u2_follower();
-    void Log_qp_des_from_follower();
+    void Log_qp_des_from_HHD();
     void Log_Exp_start_stop();
 
 #if MODE_ACRO_ENABLED == ENABLED

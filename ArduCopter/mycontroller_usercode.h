@@ -17,7 +17,7 @@ extern float quad_yaw_dot;
 extern Vector3f quad2_pos;
 extern Vector3f quad2_vel;
 
-extern float PAMD_yaw;
+extern float HHD_yaw;
 extern Vector3f u2_PAC;
 extern Vector3f u2_CAC2;
 extern Vector3f u2;
@@ -26,3 +26,5 @@ extern Vector3f qp_des_from_quad_1;
 extern Vector3f qp_des;
 
 extern float H_yaw_des_payload_attitude;
+
+extern Vector3f HHD_Acceleration;

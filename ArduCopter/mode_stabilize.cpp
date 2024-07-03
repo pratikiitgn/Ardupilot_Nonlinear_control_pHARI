@@ -136,9 +136,7 @@ void ModeStabilize::run()
 
     // get pilot's desired yaw rate
     float target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->norm_input_dz());
-    
-    // hal.console->printf("%3.3f,",  qp[0]);
-
+  
     if (!motors->armed()) {
         // Motors should be Stopped
         motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::SHUT_DOWN);
@@ -146,7 +144,7 @@ void ModeStabilize::run()
         yaw_initially               = quad_yaw;    // degrees [0 360]
         // human_des_yaw_command       = quad_yaw;    // degrees [0 360]
 
-        delta_yaw = human_des_yaw_command - PAMD_yaw;
+        delta_yaw = human_des_yaw_command - HHD_yaw;
         
     } else if (copter.ap.throttle_zero
                || (copter.air_mode == AirMode::AIRMODE_ENABLED && motors->get_spool_state() == AP_Motors::SpoolState::SHUT_DOWN)) {
@@ -279,14 +277,6 @@ void ModeStabilize::run()
     qp_dot_fil[1]   = qp_2_dot_fil;
     qp_dot_fil[2]   = qp_3_dot_fil;
 
-    qp_des[0]       = cosf(human_des_yaw_command/180.0*PI);
-    qp_des[1]       = sinf(human_des_yaw_command/180.0*PI);
-    qp_des[2]       = 0.0;
-
-    // hal.console->printf("%3.3f,",  qp_des[0]);
-    // hal.console->printf("%3.3f,",  qp_des[1]);
-    // hal.console->printf("%3.3f ---- ", qp_des[2]);
-
     // hal.console->printf("%3.3f,",  qp[0]);
     // hal.console->printf("%3.3f,",  qp[1]);
     // hal.console->printf("%3.3f\n", qp[2]);
@@ -312,7 +302,10 @@ void ModeStabilize::run()
 
     Vector3f gravity_compensation_vec(0.0,0.0,coeficiant_constant_hover_value*mq*gravity_acc);
 
-    u2                  = u2_PAC + u2_CAC2 + gravity_compensation_vec;
+    Vector3f u2_without_human_force_feedforward = u2_PAC + u2_CAC2 + gravity_compensation_vec;
+    // Vector3f u2_with_human_force_feedforward    = u2_PAC + u2_CAC2 + gravity_compensation_vec + HHD_Acceleration;
+
+    u2                  = u2_without_human_force_feedforward;
 
     // u2[0]               = 5;
     // u2[1]               = 5;
@@ -425,8 +418,8 @@ void ModeStabilize::run()
     // b1_quad[2]       = 0.0;
 
         print_counter   = 0;
-        // hal.console->printf("(%3.1f,%3.1f,%3.1f)", PAMD_yaw, quad_yaw, human_des_yaw_command);
-        // hal.console->printf("%3.1f,%3.1f\n", PAMD_yaw, quad_yaw);
+        // hal.console->printf("(%3.1f,%3.1f,%3.1f)", HHD_yaw, quad_yaw, human_des_yaw_command);
+        // hal.console->printf("%3.1f,%3.1f\n", HHD_yaw, quad_yaw);
 
         // hal.console->printf(" | ");
         // hal.console->printf("(%1.2f,", qp_fil[0]);
