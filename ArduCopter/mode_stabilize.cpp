@@ -32,6 +32,10 @@ float fil_qc_23_dot_array[]     = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0
 float fil_phi_des_array[]       = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 float fil_theta_des_array[]     = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 
+float fil_Human_x_acceleration_array[]     = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+float fil_Human_y_acceleration_array[]     = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+float fil_Human_z_acceleration_array[]     = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+
 Vector3f b1_quad(1.0,0.0,0.0);
 
 Vector3f quad2_pos(1.0,0.0,0.0);
@@ -114,9 +118,6 @@ float kd_qc_2_3     = 0.0;        //
 float delta_yaw     = 0.0;
 
 int print_counter   = 0;
-
-float H_yaw_des_payload_attitude = 0.0;
-
 float ch_8_state    = 0.0;
 
 // stabilize_run - runs the main stabilize controller
@@ -140,9 +141,8 @@ void ModeStabilize::run()
     if (!motors->armed()) {
         // Motors should be Stopped
         motors->set_desired_spool_state(AP_Motors::DesiredSpoolState::SHUT_DOWN);
-
         yaw_initially               = quad_yaw;    // degrees [0 360]
-        // human_des_yaw_command       = quad_yaw;    // degrees [0 360]
+        human_des_yaw_command       = quad_yaw;    // degrees [0 360]
 
         delta_yaw = human_des_yaw_command - HHD_yaw;
         
@@ -197,20 +197,10 @@ void ModeStabilize::run()
 
     human_roll_command          = target_roll;
     human_pitch_command         = target_pitch;
-
-    ch_8_state = RC_Channels::get_radio_in(CH_8);
     human_yaw_rate_command      = target_yaw_rate;
-
-    if (ch_8_state > 1500)
-    {
-        human_yaw_rate_command  = H_yaw_des_payload_attitude*1000.0;
-        human_yaw_rate_command  = -human_yaw_rate_command/2.0;
-    }
-
     human_throttle_command      = pilot_desired_throttle;
 
     pilot_input();
-
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////        estimate the required state of the system            ///////////
@@ -266,46 +256,77 @@ void ModeStabilize::run()
     qp_fil[1]       = qp_2_fil;
     qp_fil[2]       = qp_3_fil;
 
-    Matrix3f R_z_delta_yaw_deg(
-        cosf((delta_yaw/180.0)*PI),   -sinf((delta_yaw/180.0)*PI),      0.0,
-        sinf((delta_yaw/180.0)*PI),    cosf((delta_yaw/180.0)*PI),      0.0,
-        0.0,                             0.0,                           1.0);
+    // hal.console->printf("%3.3f,",  qp_fil[0]);
+    // hal.console->printf("%3.3f,",  qp_fil[1]);
+    // hal.console->printf("%3.3f\n", qp_fil[2]);
 
-    qp_fil = Matrix_vector_mul(R_z_delta_yaw_deg, qp_fil);
+    // Matrix3f R_z_delta_yaw_deg(
+    //     cosf((delta_yaw/180.0)*PI),   -sinf((delta_yaw/180.0)*PI),      0.0,
+    //     sinf((delta_yaw/180.0)*PI),    cosf((delta_yaw/180.0)*PI),      0.0,
+    //     0.0,                             0.0,                           1.0);
+
+    // qp_fil = Matrix_vector_mul(R_z_delta_yaw_deg, qp_fil);
 
     qp_dot_fil[0]   = qp_1_dot_fil;
     qp_dot_fil[1]   = qp_2_dot_fil;
     qp_dot_fil[2]   = qp_3_dot_fil;
 
-    // hal.console->printf("%3.3f,",  qp[0]);
-    // hal.console->printf("%3.3f,",  qp[1]);
-    // hal.console->printf("%3.3f\n", qp[2]);
-
     eq_p            = Matrix_vector_mul(hatmap(qp_fil), Matrix_vector_mul(hatmap(qp_fil), qp_des));
     eq_p_dot        = qp_dot_fil;
-    // hal.console->printf("%3.3f,%3.3f,%3.3f,", eq_p[0], eq_p[1], eq_p[2]);
+    // hal.console->printf("%3.3f,%3.3f,%3.3f | ", eq_p[0], eq_p[1], eq_p[2]);
     // hal.console->printf("%3.3f,%3.3f \n", eq_p[2], 10*eq_p_dot[2]);
     // hal.console->printf("%3.3f,%3.3f \n", eq_p[2], 10*eq_p_dot[2]);
 
-    u2_PAC[0]       =  kp_qp_1 * eq_p[0] + kd_qp_1 * eq_p_dot[0];
-    u2_PAC[1]       =  kp_qp_2 * eq_p[1] + kd_qp_2 * eq_p_dot[1];
-    u2_PAC[2]       =  kp_qp_3 * eq_p[2] + kd_qp_3 * eq_p_dot[2];
+    // hal.console->printf("%3.3f,%3.3f\n", HHD_yaw, quad_yaw);
+
+    u2_PAC[0]       =  -kp_qp_1 * eq_p[0] - kd_qp_1 * eq_p_dot[0];
+    u2_PAC[1]       =  -kp_qp_2 * eq_p[1] - kd_qp_2 * eq_p_dot[1];
+    u2_PAC[2]       =  -kp_qp_3 * eq_p[2] - kd_qp_3 * eq_p_dot[2];
 
     // hal.console->printf("%3.3f,%3.3f \n", kp_qp_3 * eq_p[2], kd_qp_3 * eq_p_dot[2]);
     // hal.console->printf("%3.3f,%3.3f, | ", kp_qp_1 * eq_p[0], kd_qp_1 * eq_p_dot[0]);
     // hal.console->printf("%3.3f,%3.3f, | ", kp_qp_2 * eq_p[1], kd_qp_2 * eq_p_dot[1]);
 
-    // hal.console->printf("u2_PAC -> %3.3f, %3.3f, %3.3f, | ", u2_PAC[0], u2_PAC[1], u2_PAC[2]);
+    // hal.console->printf("u2_PAC -> %3.3f, %3.3f, %3.3f, |\n", u2_PAC[0], u2_PAC[1], u2_PAC[2]);
 
 /////////////        summation of all the control inputs        //////////////////
-    float coeficiant_constant_hover_value = 0.45*2;
+    float coeficiant_constant_hover_value = 0.8;
 
     Vector3f gravity_compensation_vec(0.0,0.0,coeficiant_constant_hover_value*mq*gravity_acc);
 
-    Vector3f u2_without_human_force_feedforward = u2_PAC + u2_CAC2 + gravity_compensation_vec;
-    // Vector3f u2_with_human_force_feedforward    = u2_PAC + u2_CAC2 + gravity_compensation_vec + HHD_Acceleration;
+    HHD_Acceleration = Matrix_vector_mul(R_HHD,HHD_local_acceleration);
 
-    u2                  = u2_without_human_force_feedforward;
+    float HHD_x_fil_data = simple_fil_low_pos(5, fil_Human_x_acceleration_array, HHD_Acceleration[0]);
+    float HHD_y_fil_data = simple_fil_low_pos(5, fil_Human_y_acceleration_array, HHD_Acceleration[1]);
+    float HHD_z_fil_data = simple_fil_low_pos(5, fil_Human_z_acceleration_array, HHD_Acceleration[2]);
+
+    float human_gain        = 0.01;
+    float human_gain_z      = 1.25;
+
+    float human_feedforward_force_x_direction = human_gain * HHD_x_fil_data;
+    float human_feedforward_force_y_direction = human_gain * HHD_y_fil_data;
+    float human_feedforward_force_z_direction = human_gain_z * HHD_z_fil_data;
+
+    Vector3f human_feedforward_force(human_feedforward_force_x_direction, human_feedforward_force_y_direction, human_feedforward_force_z_direction);
+ 
+    // hal.console->printf("%3.3f,",HHD_Acceleration[0]);
+    // hal.console->printf("%3.3f\n",HHD_x_fil_data);
+
+    // hal.console->printf("%3.3f,",HHD_Acceleration[0]);
+    // hal.console->printf("%3.3f,",HHD_Acceleration[1]);
+    // hal.console->printf("%3.3f\n",HHD_Acceleration[2]);
+
+    // hal.console->printf("%3.3f,",HHD_local_acceleration[0]);
+    // hal.console->printf("%3.3f,",HHD_local_acceleration[1]);
+    // hal.console->printf("%3.3f\n",HHD_local_acceleration[2]);
+
+    // Vector3f u2_without_human_force_feedforward = u2_PAC + u2_CAC2 + gravity_compensation_vec;
+    Vector3f u2_with_human_force_feedforward    = u2_PAC + u2_CAC2 + gravity_compensation_vec + human_feedforward_force;
+
+    // u2          = u2_without_human_force_feedforward;
+    u2                      = u2_with_human_force_feedforward;
+
+    // u2                  = gravity_compensation_vec;
 
     // u2[0]               = 5;
     // u2[1]               = 5;
@@ -625,6 +646,10 @@ void ModeStabilize::pilot_input()
     float H_yaw_rate__      = human_yaw_rate_command / 1000.0;
     float dt_yaw            = 1.0/100.0;
     human_des_yaw_command   = wrap_360(human_des_yaw_command - H_yaw_rate__*dt_yaw);
+
+    // hal.console->printf("%3.3f,",  human_des_yaw_command);
+    // hal.console->printf("%3.3f\n",  quad_yaw);
+
 }
 
 Vector3f ModeStabilize::cross_product(Vector3f v1, Vector3f v2)

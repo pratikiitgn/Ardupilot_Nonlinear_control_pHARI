@@ -754,6 +754,30 @@ struct PACKED log_u2_ {
     float  u2_3_log;
 };
 
+struct PACKED log_hhd_att {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  hhd_att_1_log;
+    float  hhd_att_2_log;
+    float  hhd_att_3_log;
+};
+
+struct PACKED log_hhd_acc {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  hhd_acc_1_log;
+    float  hhd_acc_2_log;
+    float  hhd_acc_3_log;
+};
+
+struct PACKED log_HHD_ENCO {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float  hhd_enco_1_log;
+    float  hhd_enco_2_log;
+    float  hhd_switch_log;
+};
+
 struct PACKED log_qp_des_ {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -1423,6 +1447,12 @@ LOG_STRUCTURE_FROM_VISUALODOM \
       "U2C2",   "Qfff", "TimeUS,u2_CAC2_1_log,u2_CAC2_2_log,u2_CAC2_3_log", "s---", "F---", true }, \
     { LOG_U2_MSG, sizeof(log_u2_), \
       "U2U2",   "Qfff", "TimeUS,u2_1_log,u2_2_log,u2_3_log", "s---", "F---", true }, \
+    { LOG_HHD_ATT_MSG, sizeof(log_hhd_att), \
+      "HHDA",   "Qfff", "TimeUS,hhd_att_1_log,hhd_att_2_log,hhd_att_3_log", "s---", "F---", true }, \
+    { LOG_HHD_ACC_MSG, sizeof(log_hhd_acc), \
+      "HHDC",   "Qfff", "TimeUS,hhd_acc_1_log,hhd_acc_2_log,hhd_acc_3_log", "s---", "F---", true }, \
+    { LOG_HHD_ENCO_MSG, sizeof(log_HHD_ENCO), \
+      "HHDE",   "Qfff", "TimeUS,hhd_enco_1_log,hhd_enco_2_log,hhd_switch_log", "s---", "F---", true }, \
     { LOG_QP_DES_MSG, sizeof(log_qp_des_), \
       "QPDD",   "Qfff", "TimeUS,qpdes_1_log,qpdes_2_log,qpdes_3_log", "s---", "F---", true }, \
     { LOG_EXP_STP_MSG, sizeof(log_exp_st_sp), \
@@ -1532,6 +1562,9 @@ enum LogMessages : uint8_t {
     LOG_U2_PAC_MSG,
     LOG_U2_CAC2_MSG,
     LOG_U2_MSG,
+    LOG_HHD_ATT_MSG,
+    LOG_HHD_ACC_MSG,
+    LOG_HHD_ENCO_MSG,
     LOG_QP_DES_MSG,
     LOG_EXP_STP_MSG,
     _LOG_LAST_MSG_

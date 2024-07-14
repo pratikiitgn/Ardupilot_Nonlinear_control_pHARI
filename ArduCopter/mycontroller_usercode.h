@@ -28,3 +28,5 @@ extern Vector3f qp_des;
 extern float H_yaw_des_payload_attitude;
 
 extern Vector3f HHD_Acceleration;
+extern Vector3f HHD_local_acceleration;
+extern Matrix3f R_HHD;

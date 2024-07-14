@@ -40,6 +40,7 @@ char HHD_local_acc_Y_char[]     = "500000";
 char HHD_local_acc_Z_char[]     = "500000";
 
 Vector3f HHD_Acceleration(0.0,0.0,0.0);
+Vector3f HHD_local_acceleration(0.0,0.0,0.0);
 
 int flag_start_stop_int         = 0;
 
@@ -106,9 +107,13 @@ void Copter::userhook_FastLoop()
     Log_u2_PAC_follower();                          // log_u2_PAC           | LOG_U2_PAC_MSG    |   UPAC
     Log_u2_CAC2_follower();                         // log_u2_CAC2          | LOG_U2_CAC2_MSG   |   U2C2
     Log_u2_follower();                              // log_u2_              | LOG_U2_MSG        |   U2U2
-    Log_qp_des_from_HHD();                     // log_qp_des_          | LOG_QP_DES_MSG    |   QPDD
+    Log_qp_des_from_HHD();                          // log_qp_des_          | LOG_QP_DES_MSG    |   QPDD
     Log_Exp_start_stop();                           // log_exp_st_sp        | LOG_EXP_STP_MSG   |   EXSP      
 
+    Log_cable_2_attitude_data_follower();           // log_Cab2_ATT_        | LOG_CABL_ATT_MSG  |   CATT
+    Log_HHD_attitude();                             // log_hhd_att          | LOG_HHD_ATT_MSG   |   HHDA
+    Log_HHD_acceleration();                         // log_hhd_acc          | LOG_HHD_ACC_MSG   |   HHDC
+    Log_HHD_encoders();                             // log_HHD_ENCO         | LOG_HHD_ENCO_MSG  |   HHDE
 }
 #endif
 
@@ -251,14 +256,18 @@ void Copter::get_HHD_attitude_data()
         // hal.console->printf("HHD_attitude-> ");
         // hal.console->printf("%3.3f,", HHD_roll);
         // hal.console->printf("%3.3f,", HHD_pitch);
-        // hal.console->printf("%3.3f,", HHD_yaw);
+        // hal.console->printf("%3.3f\n", HHD_yaw);
         // hal.console->printf(" | ");
 
         Vector3f rpy_vector(HHD_roll*PI/180.0,HHD_pitch*PI/180.0,HHD_yaw*PI/180.0);
         R_HHD   = eulerAnglesToRotationMatrix(rpy_vector);
+
         Vector3f e_1(1.0,0,0.0);
 
-        qp_des  = Matrix_vector_mul(R_HHD,e_1);
+        // qp_des  = Matrix_vector_mul(R_HHD,e_1);
+
+        hal.console->printf("%3.3f,", HHD_encoder_1);
+        hal.console->printf("%3.3f\n", HHD_encoder_2);
 
         Matrix3f HH_R_theta (
                cosf(HHD_encoder_1*PI/180.0),    0,      sinf(HHD_encoder_1*PI/180.0),
@@ -274,7 +283,14 @@ void Copter::get_HHD_attitude_data()
         Vector3f p_1(1.0,0,0.0);
 
         qp_local = Matrix_vector_mul(HH_R_phi,Matrix_vector_mul(HH_R_theta,p_1));
-        qp       = Matrix_vector_mul(R_HHD,qp_local);
+        // qp       = Matrix_vector_mul(R_HHD,qp_local);
+        qp       = qp_local;
+
+        Vector3f qp_temp(Matrix_vector_mul(HH_R_theta,p_1));
+
+        // hal.console->printf("%3.3f,",  qp[0]);
+        // hal.console->printf("%3.3f,",  qp[1]);
+        // hal.console->printf("%3.3f\n", qp[2]);
 
         // hal.console->printf("%3.3f,",  qp[0]);
         // hal.console->printf("%3.3f,",  qp[1]);
@@ -399,14 +415,14 @@ void Copter::get_HHD_Acceleration_data()
             HHD_local_acc_Z = -max_magnitude_to_acceleration;
         }
 
-        Vector3f HHD_local_acceleration(HHD_local_acc_X,HHD_local_acc_Y,HHD_local_acc_Z);
-
-        HHD_Acceleration = Matrix_vector_mul(R_HHD,HHD_local_acceleration);
+        HHD_local_acceleration[0] = HHD_local_acc_X;
+        HHD_local_acceleration[1] = HHD_local_acc_Y;
+        HHD_local_acceleration[2] = HHD_local_acc_Z;
 
         // hal.console->printf("HHD_Acce->");
         // hal.console->printf("%3.3f,",   HHD_local_acc_X);
         // hal.console->printf("%3.3f,",   HHD_local_acc_Y);
-        // hal.console->printf("%3.3f,",  HHD_local_acc_Z);
+        // hal.console->printf("%3.3f\n",  HHD_local_acc_Z);
         // hal.console->printf(" | ");
 
 }
@@ -612,7 +628,7 @@ void Copter::get_HHD_Encoders_Data()
         // hal.console->printf("HHD_encoders -> ");
         // hal.console->printf("%3.3f,", HHD_encoder_1);
         // hal.console->printf("%3.3f,", HHD_encoder_2);
-        // hal.console->printf("%3.3f,", HHD_safety_swith_state);
+        // hal.console->printf("%3.3f\n", HHD_safety_swith_state);
         // hal.console->printf(" | ");
 
         // if (CAM_roll > 60.0){
@@ -887,6 +903,43 @@ void Copter::Log_qp_des_from_HHD()
     };
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
+
+void Copter::Log_HHD_attitude()
+{
+    struct log_hhd_att pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_HHD_ATT_MSG),
+    time_us  : AP_HAL::micros64(),
+    hhd_att_1_log : HHD_roll,
+    hhd_att_2_log : HHD_pitch,
+    hhd_att_3_log : HHD_yaw,
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_HHD_acceleration()
+{
+    struct log_hhd_acc pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_HHD_ACC_MSG),
+    time_us  : AP_HAL::micros64(),
+    hhd_acc_1_log : HHD_local_acceleration[0],
+    hhd_acc_2_log : HHD_local_acceleration[1],
+    hhd_acc_3_log : HHD_local_acceleration[2],
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
+void Copter::Log_HHD_encoders()
+{
+    struct log_HHD_ENCO pkt = {
+    LOG_PACKET_HEADER_INIT(LOG_HHD_ENCO_MSG),
+    time_us  : AP_HAL::micros64(),
+    hhd_enco_1_log : HHD_encoder_1,
+    hhd_enco_2_log : HHD_encoder_2,
+    hhd_switch_log : HHD_safety_swith_state,
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+
 
 void Copter::Log_Exp_start_stop()
 {

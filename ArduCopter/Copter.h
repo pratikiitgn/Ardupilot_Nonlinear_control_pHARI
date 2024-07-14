@@ -1021,6 +1021,9 @@ private:
     void Log_u2_CAC2_follower();
     void Log_u2_follower();
     void Log_qp_des_from_HHD();
+    void Log_HHD_attitude();
+    void Log_HHD_acceleration();
+    void Log_HHD_encoders();
     void Log_Exp_start_stop();
 
 #if MODE_ACRO_ENABLED == ENABLED
