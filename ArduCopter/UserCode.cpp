@@ -76,7 +76,7 @@ void Copter::userhook_init()
     // put your initialisation code here
     // this will be called once at start-up
 
-    hal.serial(CAM_device_port)->begin(230400);                 // GPS 2        port Pixhawk Cube Orange - CAM  device
+    hal.serial(CAM_device_port)->begin(115200);                 // GPS 2        port Pixhawk Cube Orange - CAM  device
     hal.serial(HHD_Attitude_port)->begin(230400);               // GPS 1        port Pixhawk Cube Orange - HHD Attitude
     hal.serial(HHD_Acceleration_port)->begin(230400);           // telemetry 2  port Pixhawk Cube Orange - PAMD device
     hal.serial(HHD_Encoders_port)->begin(115200);                // telemetry 1  port Pixhawk Cube Orange - 
@@ -266,8 +266,8 @@ void Copter::get_HHD_attitude_data()
 
         // qp_des  = Matrix_vector_mul(R_HHD,e_1);
 
-        hal.console->printf("%3.3f,", HHD_encoder_1);
-        hal.console->printf("%3.3f\n", HHD_encoder_2);
+        // hal.console->printf("%3.3f,", HHD_encoder_1);
+        // hal.console->printf("%3.3f\n", HHD_encoder_2);
 
         Matrix3f HH_R_theta (
                cosf(HHD_encoder_1*PI/180.0),    0,      sinf(HHD_encoder_1*PI/180.0),
@@ -453,8 +453,6 @@ void Copter::get_CAM_device_Data()
     char endChar        = '/';
     bool new_data       = false;
 
-    // hal.console->printf("serial data -> %c\n",hal.serial(3)->read());
-
     while (hal.serial(CAM_device_port)->available()>0 && new_data == false)
         {
             char temp = hal.serial(CAM_device_port)->read();
@@ -503,8 +501,8 @@ void Copter::get_CAM_device_Data()
         CAM_roll  =  (float)((encoder_roll_int  - 50000.0) / 100.0);
         CAM_pitch =  (float)((encoder_pitch_int - 50000.0) / 100.0); 
 
-        // hal.console->printf("%3.3f,", CAM_roll);
-        // hal.console->printf("%3.3f\n", CAM_pitch);
+        hal.console->printf("%3.3f,", CAM_roll);
+        hal.console->printf("%3.3f\n", CAM_pitch);
 
         if (CAM_roll > 60.0){
             CAM_roll = 60.0;
